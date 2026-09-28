@@ -45,7 +45,7 @@
         </button>
 
         <button type="button" class='menu-btn' id="trashBtn">
-          <img src='notesIcon/trash.png' id="trashImg" />
+          <img src='/trash.png' id="trashImg" />
           <span>Trash</span>
         </button>
       </div>
@@ -980,18 +980,18 @@
   function updateMenuIcons(selected) {
     allNotesImg.src =
       selected === 'all'
-        ? 'notesIcon 아이콘/All Notes(on).png'
-        : 'notesIcon 아이콘/All Notes(off).png';
+        ? 'notesIcon/All Notes(on).png'
+        : 'notesIcon/All Notes(off).png';
 
     quickNotesImg.src =
       selected === 'quick'
-        ? 'notesIcon 아이콘/Quick Notes(on).png'
-        : 'notesIcon 아이콘/Quick Notes(off).png';
+        ? 'notesIcon/Quick Notes(on).png'
+        : 'notesIcon/Quick Notes(off).png';
 
     foldersImg.src =
       selected === 'folders'
-        ? 'notesIcon 아이콘/Folders(on).png'
-        : 'notesIcon 아이콘/Folders(off).png';
+        ? 'notesIcon/Folders(on).png'
+        : 'notesIcon/Folders(off).png';
 
     if (selected === 'trash') {
       trashImg.classList.add('icon-blue');
