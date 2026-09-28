@@ -1322,18 +1322,18 @@
   function updateMenuIcons(selected) {
     allNotesImg.src =
       selected === 'all'
-        ? '메모장 아이콘/All Notes(on).png'
-        : '메모장 아이콘/All Notes(off).png';
+        ? 'notesIcon/All Notes(on).png'
+        : 'notesIcon/All Notes(off).png';
 
     quickNotesImg.src =
       selected === 'quick'
-        ? '메모장 아이콘/Quick Notes(on).png'
-        : '메모장 아이콘/Quick Notes(off).png';
+        ? 'notesIcon/Quick Notes(on).png'
+        : 'notesIcon/Quick Notes(off).png';
 
     foldersImg.src =
       selected === 'folders'
-        ? '메모장 아이콘/Folders(on).png'
-        : '메모장 아이콘/Folders(off).png';
+        ? 'notesIcon/Folders(on).png'
+        : 'notesIcon/Folders(off).png';
 
     if (selected === 'trash') {
       trashImg.classList.add('icon-blue');
