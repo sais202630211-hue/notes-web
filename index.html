@@ -30,17 +30,17 @@
       <!-- 메뉴 버튼 영역 -->
       <div class='frame_7_l frame_7' style="gap: 4px;">
         <button type="button" class='menu-btn' id="allNotesBtn">
-          <img src='notesIcon/All Notes(on).png' id="allNotesImg" />
+          <img src='/All Notes(on).png' id="allNotesImg" />
           <span>All Notes</span>
         </button>
 
         <button type="button" class='menu-btn' id="quickNotesBtn">
-          <img src='notesIcon/Quick Notes(off).png' id="quickNotesImg" />
+          <img src='/Quick Notes(off).png' id="quickNotesImg" />
           <span>Quick Notes</span>
         </button>
 
         <button type="button" class='menu-btn' id="foldersBtn">
-          <img src='notesIcon/Folders(off).png' id="foldersImg" />
+          <img src='/Folders(off).png' id="foldersImg" />
           <span>Folders</span>
         </button>
 
@@ -980,7 +980,7 @@
   function updateMenuIcons(selected) {
     allNotesImg.src =
       selected === 'all'
-        ? 'notesIcon/All Notes(on).png'
+        ? '/All Notes(on).png'
         : 'notesIcon/All Notes(off).png';
 
     quickNotesImg.src =
