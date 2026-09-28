@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>notes-web</title>
+  <title>노트 웹</title>
   <link rel="stylesheet" href="all notes UI.css">
 </head>
 <body>
@@ -94,9 +94,8 @@
   </div>
 
 <script>
-    const newNoteBtn = document.getElementById('newNoteBtn');
+  const newNoteBtn = document.getElementById('newNoteBtn');
   const newFolderBtn = document.getElementById('newFolderBtn');
-
   const allNotesBtn = document.getElementById('allNotesBtn');
   const quickNotesBtn = document.getElementById('quickNotesBtn');
   const foldersBtn = document.getElementById('foldersBtn');
@@ -110,7 +109,6 @@
   const noteList = document.getElementById('noteList');
   const foldersHeader = document.getElementById('foldersHeader');
   const trashActionArea = document.getElementById('trashActionArea');
-
   const restoreNoteBtn = document.getElementById('restoreNoteBtn');
   const emptyTrashBtn = document.getElementById('emptyTrashBtn');
 
@@ -128,224 +126,75 @@
   const btnHeading = document.getElementById('btnHeading');
   const btnLink = document.getElementById('btnLink');
 
-  /*
-   * ============================================================
-   * localStorage
-   * ============================================================
-   */
-
-  const STORAGE_KEY = 'notesWebData';
-
-  let notesData = {
-    folders: [],
-    notes: []
-  };
-
-  function saveData() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(notesData));
-  }
-
-  function loadData() {
-    const savedData = localStorage.getItem(STORAGE_KEY);
-
-    if (!savedData) {
-      notesData = {
-        folders: [],
-        notes: []
-      };
-      return;
-    }
-
-    try {
-      notesData = JSON.parse(savedData);
-
-      if (!Array.isArray(notesData.folders)) {
-        notesData.folders = [];
-      }
-
-      if (!Array.isArray(notesData.notes)) {
-        notesData.notes = [];
-      }
-    } catch (error) {
-      console.error('저장된 데이터를 불러오는 중 오류:', error);
-
-      notesData = {
-        folders: [],
-        notes: []
-      };
-    }
-  }
-
-  function generateId(prefix = 'item') {
-    return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
-  }
-
-  /*
-   * ============================================================
-   * 날짜 / 시간
-   * ============================================================
-   */
-
-  function getFormattedDate(dateObj) {
-    const year = dateObj.getFullYear();
-    const month = dateObj.getMonth() + 1;
-    const date = dateObj.getDate();
-
-    let hours = dateObj.getHours();
-    const minutes = String(dateObj.getMinutes()).padStart(2, '0');
-
-    const ampm = hours >= 12 ? 'PM' : 'AM';
-
-    hours = hours % 12;
-    hours = hours ? hours : 12;
-
-    const formattedHours = String(hours).padStart(2, '0');
-
-    return `${year}년 ${month}월 ${date}일 ${ampm} ${formattedHours}:${minutes}`;
-  }
-
-  function getElapsedTimeStr(updatedTimestamp) {
-    if (!updatedTimestamp) return '방금 전';
-
-    const now = Date.now();
-
-    const diffInSeconds =
-      Math.floor((now - Number(updatedTimestamp)) / 1000);
-
-    if (diffInSeconds < 60) {
-      return '방금 전';
-    }
-
-    const diffInMinutes = Math.floor(diffInSeconds / 60);
-
-    if (diffInMinutes < 60) {
-      return `${diffInMinutes}분 전`;
-    }
-
-    const diffInHours = Math.floor(diffInMinutes / 60);
-
-    if (diffInHours < 24) {
-      return `${diffInHours}시간 전`;
-    }
-
-    const diffInDays = Math.floor(diffInHours / 24);
-
-    if (diffInDays < 30) {
-      return `${diffInDays}일 전`;
-    }
-
-    const diffInMonths = Math.floor(diffInDays / 30);
-
-    if (diffInMonths < 12) {
-      return `${diffInMonths}달 전`;
-    }
-
-    const diffInYears = Math.floor(diffInDays / 365);
-
-    return `${diffInYears}년 전`;
-  }
-
-  /*
-   * ============================================================
-   * 에디터 서식
-   * ============================================================
-   */
-
+  /* 드래그 및 포커스 유지 서식 실행 함수 */
   function executeCommand(e, command, value = null) {
-    if (e) {
-      e.preventDefault();
-    }
+    // 버튼 클릭 시 에디터 포커스가 풀리지 않도록 기본 동작 방지
+    if (e) e.preventDefault();
 
-    if (!inputContent || currentCategory === 'trash') {
-      return;
-    }
+    if (!inputContent || currentCategory === 'trash') return;
 
+    // 에디터로 다시 포커스 맞추기
     inputContent.focus();
 
+    // 선택 영역(Selection)이 유지된 상태로 명령어 실행
     document.execCommand(command, false, value);
 
-    inputContent.dispatchEvent(new Event('input', {
-      bubbles: true
-    }));
+    // 변경사항 저장 트리거 (노트 카드 미리보기 및 수정시간 갱신)
+    inputContent.dispatchEvent(new Event('input'));
   }
 
+  /* 각 도구 버튼별 클릭 이벤트 (e.preventDefault를 적용하기 위해 e 전달) */
+
+  // 1. Bold (굵게)
   if (btnBold) {
-    btnBold.addEventListener('mousedown', (e) => {
-      executeCommand(e, 'bold');
-    });
+    btnBold.addEventListener('mousedown', (e) => executeCommand(e, 'bold'));
   }
 
+  // 2. Italic (기울임)
   if (btnItalic) {
-    btnItalic.addEventListener('mousedown', (e) => {
-      executeCommand(e, 'italic');
-    });
+    btnItalic.addEventListener('mousedown', (e) => executeCommand(e, 'italic'));
   }
 
+  // 3. Underline (밑줄)
   if (btnUnderline) {
-    btnUnderline.addEventListener('mousedown', (e) => {
-      executeCommand(e, 'underline');
-    });
+    btnUnderline.addEventListener('mousedown', (e) => executeCommand(e, 'underline'));
   }
 
+  // 4. Strikethrough (취소선)
   if (btnStrike) {
-    btnStrike.addEventListener('mousedown', (e) => {
-      executeCommand(e, 'strikeThrough');
-    });
+    btnStrike.addEventListener('mousedown', (e) => executeCommand(e, 'strikeThrough'));
   }
 
+  // 5. List (글머리 기호)
   if (btnList) {
-    btnList.addEventListener('mousedown', (e) => {
-      executeCommand(e, 'insertUnorderedList');
-    });
+    btnList.addEventListener('mousedown', (e) => executeCommand(e, 'insertUnorderedList'));
   }
 
+  // 6. Heading (제목 크기)
   if (btnHeading) {
-    btnHeading.addEventListener('mousedown', (e) => {
-      executeCommand(e, 'formatBlock', '<h3>');
-    });
+    btnHeading.addEventListener('mousedown', (e) => executeCommand(e, 'formatBlock', '<h3>'));
   }
 
-  function normalizeUrl(url) {
-    if (!url) return '';
-
-    const trimmed = url.trim();
-
-    if (/^(https?:\/\/|file:\/\/|data:|\/|\.\/)/i.test(trimmed)) {
-      return trimmed;
-    }
-
-    return 'https://' + trimmed;
-  }
-
+  // 7. Link (웹 링크 삽입)
   if (btnLink) {
     btnLink.addEventListener('mousedown', (e) => {
       e.preventDefault();
-
       const inputUrl = prompt('연결할 링크 URL을 입력하세요:');
-
-      if (!inputUrl || inputUrl.trim() === '') {
-        return;
-      }
-
-      const finalUrl = normalizeUrl(inputUrl);
-
-      const selection = window.getSelection();
-
-      if (!selection || selection.isCollapsed) {
-        executeCommand(
-          null,
-          'insertHTML',
-          `<a href="${finalUrl}" target="_blank" rel="noopener noreferrer">${finalUrl}</a>`
-        );
-      } else {
-        executeCommand(null, 'createLink', finalUrl);
-
-        const anchor =
-          selection.anchorNode?.parentElement?.closest('a');
-
-        if (anchor) {
-          anchor.target = '_blank';
-          anchor.rel = 'noopener noreferrer';
+      if (inputUrl && inputUrl.trim() !== '') {
+        const finalUrl = normalizeUrl(inputUrl);
+        
+        // 현재 선택 구역이 없을 경우 텍스트 자동 생성
+        const selection = window.getSelection();
+        if (selection.isCollapsed) {
+          executeCommand(null, 'insertHTML', `<a href="${finalUrl}" target="_blank" rel="noopener noreferrer">${finalUrl}</a>`);
+        } else {
+          executeCommand(null, 'createLink', finalUrl);
+          // 생성된 a 태그에 target="_blank" 부여
+          const anchor = selection.anchorNode.parentElement.closest('a');
+          if (anchor) {
+            anchor.target = '_blank';
+            anchor.rel = 'noopener noreferrer';
+          }
         }
       }
     });
@@ -354,513 +203,186 @@
   if (inputContent) {
     inputContent.addEventListener('click', (e) => {
       const link = e.target.closest('a');
-
       if (link && link.href) {
-        e.preventDefault();
-
-        window.open(
-          link.href,
-          '_blank',
-          'noopener,noreferrer'
-        );
+        e.preventDefault(); // 편집 동작 방지
+        window.open(link.href, '_blank'); // 왼쪽 클릭 시 즉시 새 탭 오픈
       }
     });
   }
 
-  /*
-   * ============================================================
-   * 현재 상태
-   * ============================================================
-   */
+  function normalizeUrl(url) {
+    if (!url) return '';
+    const trimmed = url.trim();
+    if (/^(https?:\/\/|file:\/\/|data:|\/|\.\/)/i.test(trimmed)) {
+      return trimmed;
+    }
+    return 'https://' + trimmed;
+  }
 
   let activeNote = null;
   let activeFolder = null;
   let currentCategory = 'all';
 
-  /*
-   * ============================================================
-   * 카드 시간 갱신
-   * ============================================================
-   */
+  function getFormattedDate(dateObj) {
+    const year = dateObj.getFullYear();
+    const month = dateObj.getMonth() + 1;
+    const date = dateObj.getDate();
+    
+    let hours = dateObj.getHours();
+    const minutes = String(dateObj.getMinutes()).padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    
+    hours = hours % 12;
+    hours = hours ? hours : 12;
+    const formattedHours = String(hours).padStart(2, '0');
+
+    return `${year}년 ${month}월 ${date}일 ${ampm} ${formattedHours}:${minutes}`;
+  }
+
+  function getElapsedTimeStr(updatedTimestamp) {
+    if (!updatedTimestamp) return '방금 전';
+    
+    const now = Date.now();
+    const diffInSeconds = Math.floor((now - Number(updatedTimestamp)) / 1000);
+
+    if (diffInSeconds < 60) return '방금 전';
+    
+    const diffInMinutes = Math.floor(diffInSeconds / 60);
+    if (diffInMinutes < 60) return `${diffInMinutes}분 전`;
+
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    if (diffInHours < 24) return `${diffInHours}시간 전`;
+
+    const diffInDays = Math.floor(diffInHours / 24);
+    if (diffInDays < 30) return `${diffInDays}일 전`;
+
+    const diffInMonths = Math.floor(diffInDays / 30);
+    if (diffInMonths < 12) return `${diffInMonths}달 전`;
+
+    const diffInYears = Math.floor(diffInDays / 365);
+    return `${diffInYears}년 전`;
+  }
 
   function refreshAllNoteTimes() {
     const noteCards = noteList.querySelectorAll('.frame_20');
-
     noteCards.forEach(card => {
       const timeSpan = card.querySelector('.card-time');
-
       if (timeSpan && timeSpan.dataset.updatedAt) {
-        timeSpan.textContent =
-          getElapsedTimeStr(timeSpan.dataset.updatedAt);
+        timeSpan.textContent = getElapsedTimeStr(timeSpan.dataset.updatedAt);
       }
     });
   }
 
   function updateTimestamp() {
-    if (!activeNote) {
-      return;
-    }
-
-    const nowTimestamp = Date.now();
-
-    const noteId = activeNote.dataset.id;
-
-    const note = notesData.notes.find(
-      item => item.id === noteId
-    );
-
-    if (note) {
-      note.updatedAt = nowTimestamp;
+    if (!activeNote) return;
+    const nowObj = new Date();
+    const nowTimestamp = nowObj.getTime();
+    
+    if (lastModified) {
+      lastModified.textContent = `최종 수정일: ${getFormattedDate(nowObj)}`;
     }
 
     const timeSpan = activeNote.querySelector('.card-time');
-
     if (timeSpan) {
       timeSpan.dataset.updatedAt = nowTimestamp;
-      timeSpan.textContent = '방금 전';
     }
-
-    if (lastModified) {
-      lastModified.textContent =
-        `최종 수정일: ${getFormattedDate(new Date(nowTimestamp))}`;
-    }
-
-    saveData();
 
     refreshAllNoteTimes();
   }
 
-  /*
-   * ============================================================
-   * 읽기 전용 상태
-   * ============================================================
-   */
-
+  /* 에디터 읽기 전용 상태 업데이트 */
   function updateEditorReadOnlyState() {
-    const isTrash =
-      currentCategory === 'trash' ||
-      (activeNote && activeNote.dataset.category === 'trash');
-
+    const isTrash = (currentCategory === 'trash') || (activeNote && activeNote.dataset.category === 'trash');
     if (isTrash) {
       inputTitle.setAttribute('readonly', 'true');
-      inputContent.setAttribute('contenteditable', 'false');
+      inputContent.setAttribute('readonly', 'true');
     } else {
       inputTitle.removeAttribute('readonly');
-      inputContent.setAttribute('contenteditable', 'true');
+      inputContent.removeAttribute('readonly');
     }
   }
 
-  /*
-   * ============================================================
-   * 폴더 생성
-   * ============================================================
-   */
-
+  /* 폴더 생성 함수 */
   function createFolder() {
     if (currentCategory === 'trash') {
-      alert('휴지통에서는 폴더를 생성할 수 없습니다.');
+      alert("휴지통에서는 폴더를 생성할 수 없습니다.");
       return;
     }
 
-    const folderId = generateId('folder');
-
-    const folder = {
-      id: folderId,
-      name: '새 폴더',
-      parentId: activeFolder
-        ? activeFolder.dataset.id
-        : null,
-      collapsed: false,
-      trashed: false,
-      createdAt: Date.now()
-    };
-
-    notesData.folders.push(folder);
-
-    saveData();
-
-    renderAll();
-
-    const folderElement =
-      document.querySelector(
-        `.folder-item[data-id="${folderId}"]`
-      );
-
-    if (folderElement) {
-      selectFolder(folderElement);
-    }
-  }
-
-  /*
-   * ============================================================
-   * 폴더 렌더링
-   * ============================================================
-   */
-
-  function createFolderElement(folder) {
-    const wrapper = document.createElement('div');
-
-    wrapper.className = 'folder-wrapper';
-
-    wrapper.dataset.id = folder.id;
-
-    if (folder.trashed) {
-      wrapper.dataset.folderTrash = 'true';
-    }
+    const folderWrapper = document.createElement('div');
+    folderWrapper.className = 'folder-wrapper';
 
     const folderItem = document.createElement('div');
-
     folderItem.className = 'folder-item';
-
-    folderItem.dataset.id = folder.id;
-
-    const childrenContainer = document.createElement('div');
-
-    childrenContainer.className = 'folder-children';
-
-    if (folder.collapsed) {
-      childrenContainer.classList.add('collapsed');
-    }
 
     folderItem.innerHTML = `
       <div class="folder-left">
-        <span class="arrow-icon">
-          ${folder.collapsed ? '▶' : '▼'}
-        </span>
-
+        <span class="arrow-icon">▼</span>
         <span class="folder-icon">📁</span>
-
-        <span
-          class="folder-title"
-          contenteditable="true"
-          spellcheck="false"
-        ></span>
+        <span class="folder-title" contenteditable="true" spellcheck="false">새 폴더</span>
       </div>
-
       <span class="folder-count-badge">0</span>
     `;
 
-    const folderTitle =
-      folderItem.querySelector('.folder-title');
+    const childrenContainer = document.createElement('div');
+    childrenContainer.className = 'folder-children';
 
-    folderTitle.textContent = folder.name;
+    folderWrapper.appendChild(folderItem);
+    folderWrapper.appendChild(childrenContainer);
 
-    wrapper.appendChild(folderItem);
-    wrapper.appendChild(childrenContainer);
+    if (activeFolder) {
+      const targetChildren = activeFolder.nextElementSibling;
+      if (targetChildren && targetChildren.classList.contains('folder-children')) {
+        targetChildren.appendChild(folderWrapper);
+        targetChildren.classList.remove('collapsed');
+        const arrow = activeFolder.querySelector('.arrow-icon');
+        if (arrow) arrow.textContent = '▼';
+      }
+    } else {
+      noteList.appendChild(folderWrapper);
+    }
 
-    /*
-     * 폴더 열기 / 닫기
-     */
-    const arrowIcon =
-      folderItem.querySelector('.arrow-icon');
+    const arrowIcon = folderItem.querySelector('.arrow-icon');
+    const folderTitle = folderItem.querySelector('.folder-title');
 
     arrowIcon.addEventListener('click', (e) => {
       e.stopPropagation();
-
-      folder.collapsed = !folder.collapsed;
-
-      childrenContainer.classList.toggle(
-        'collapsed',
-        folder.collapsed
-      );
-
-      arrowIcon.textContent =
-        folder.collapsed ? '▶' : '▼';
-
-      saveData();
+      childrenContainer.classList.toggle('collapsed');
+      arrowIcon.textContent = childrenContainer.classList.contains('collapsed') ? '▶' : '▼';
     });
 
-    /*
-     * 폴더 제목 수정
-     */
     folderTitle.addEventListener('click', (e) => {
       e.stopPropagation();
-
       selectFolder(folderItem);
     });
 
     folderTitle.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
         e.preventDefault();
-
         folderTitle.blur();
       }
     });
 
     folderTitle.addEventListener('blur', () => {
-      const newName =
-        folderTitle.textContent.trim();
-
-      folder.name =
-        newName === '' ? '새 폴더' : newName;
-
-      folderTitle.textContent = folder.name;
-
-      saveData();
+      if (folderTitle.textContent.trim() === '') {
+        folderTitle.textContent = '새 폴더';
+      }
     });
 
-    /*
-     * 폴더 선택
-     */
     folderItem.addEventListener('click', (e) => {
       e.stopPropagation();
-
       selectFolder(folderItem);
     });
 
-    return wrapper;
-  }
-
-  /*
-   * ============================================================
-   * 노트 생성
-   * ============================================================
-   */
-
-  function createNewNote() {
-    if (currentCategory === 'trash') {
-      alert('휴지통에서는 새 메모를 생성할 수 없습니다.');
-      return;
+    if (currentCategory !== 'folders') {
+      currentCategory = 'folders';
+      updateMenuIcons('folders');
     }
-
-    if (currentCategory === 'folders' && !activeFolder) {
-      alert('노트를 생성할 폴더를 먼저 선택해주세요.');
-      return;
-    }
-
-    const noteId = generateId('note');
-
-    const now = Date.now();
-
-    let folderId = null;
-
-    if (activeFolder) {
-      folderId = activeFolder.dataset.id;
-    }
-
-    const note = {
-      id: noteId,
-      title: '',
-      content: '',
-      folderId: folderId,
-      category: folderId ? 'folder' : currentCategory,
-      trashed: false,
-      updatedAt: now,
-      createdAt: now
-    };
-
-    notesData.notes.unshift(note);
-
-    saveData();
-
-    renderAll();
-
-    const noteElement =
-      document.querySelector(
-        `.frame_20[data-id="${noteId}"]`
-      );
-
-    if (noteElement) {
-      selectNote(noteElement);
-    }
-  }
-
-  /*
-   * ============================================================
-   * 노트 DOM 생성
-   * ============================================================
-   */
-
-  function createNoteElement(note) {
-    const noteCard = document.createElement('div');
-
-    noteCard.className =
-      'frame_20_l frame_20';
-
-    noteCard.style.cursor = 'pointer';
-
-    noteCard.dataset.id = note.id;
-
-    noteCard.dataset.category =
-      note.trashed ? 'trash' : note.category;
-
-    noteCard.innerHTML = `
-      <span class="text_7_l text_7 card-title">
-      </span>
-
-      <span class="text_8_l card-content">
-      </span>
-
-      <span
-        class="text_8_l card-time"
-        data-updated-at="${note.updatedAt}"
-      >
-      </span>
-    `;
-
-    const titleSpan =
-      noteCard.querySelector('.card-title');
-
-    const contentSpan =
-      noteCard.querySelector('.card-content');
-
-    const timeSpan =
-      noteCard.querySelector('.card-time');
-
-    titleSpan.dataset.fullTitle =
-      note.title || '';
-
-    contentSpan.dataset.fullContent =
-      note.content || '';
-
-    renderNoteTitle(
-      titleSpan,
-      note.title || '',
-      false
-    );
-
-    updateContentPreview(
-      contentSpan,
-      note.content || ''
-    );
-
-    timeSpan.textContent =
-      getElapsedTimeStr(note.updatedAt);
-
-    noteCard.addEventListener('click', (e) => {
-      e.stopPropagation();
-
-      selectNote(noteCard);
-    });
-
-    return noteCard;
-  }
-
-  function updateContentPreview(
-    contentSpan,
-    value
-  ) {
-    if (!value || value.trim() === '') {
-      contentSpan.textContent = '내용 없음';
-      return;
-    }
-
-    /*
-     * HTML 태그를 제거한 미리보기
-     */
-    const tempDiv =
-      document.createElement('div');
-
-    tempDiv.innerHTML = value;
-
-    const plainText =
-      tempDiv.textContent ||
-      tempDiv.innerText ||
-      '';
-
-    if (plainText.length > 20) {
-      contentSpan.textContent =
-        plainText.slice(0, 20) + '...';
-    } else {
-      contentSpan.textContent = plainText;
-    }
-  }
-
-  /*
-   * ============================================================
-   * 전체 렌더링
-   * ============================================================
-   */
-
-  function renderAll() {
-    noteList.innerHTML = '';
-
-    /*
-     * 최상위 폴더부터 렌더링
-     */
-    const rootFolders =
-      notesData.folders.filter(
-        folder => folder.parentId === null
-      );
-
-    rootFolders.forEach(folder => {
-      const wrapper =
-        createFolderTree(folder);
-
-      noteList.appendChild(wrapper);
-    });
-
-    /*
-     * 폴더에 속하지 않는 노트
-     */
-    const rootNotes =
-      notesData.notes.filter(
-        note => !note.folderId
-      );
-
-    rootNotes.forEach(note => {
-      noteList.appendChild(
-        createNoteElement(note)
-      );
-    });
 
     updateFolderCounts();
-
-    filterNotes(
-      searchInput ? searchInput.value : ''
-    );
+    selectFolder(folderItem);
+    filterNotes(searchInput ? searchInput.value : '');
   }
-
-  /*
-   * ============================================================
-   * 폴더 트리 생성
-   * ============================================================
-   */
-
-  function createFolderTree(folder) {
-    const wrapper =
-      createFolderElement(folder);
-
-    const childrenContainer =
-      wrapper.querySelector('.folder-children');
-
-    /*
-     * 이 폴더 안의 노트
-     */
-    const folderNotes =
-      notesData.notes.filter(
-        note => note.folderId === folder.id
-      );
-
-    folderNotes.forEach(note => {
-      childrenContainer.appendChild(
-        createNoteElement(note)
-      );
-    });
-
-    /*
-     * 하위 폴더
-     */
-    const childFolders =
-      notesData.folders.filter(
-        child =>
-          child.parentId === folder.id
-      );
-
-    childFolders.forEach(childFolder => {
-      childrenContainer.appendChild(
-        createFolderTree(childFolder)
-      );
-    });
-
-    return wrapper;
-  }
-
-  /*
-   * ============================================================
-   * 폴더 선택
-   * ============================================================
-   */
 
   function selectFolder(folderItem) {
     if (activeFolder === folderItem) {
@@ -868,66 +390,84 @@
       return;
     }
 
-    deselectNote();
     deselectFolder();
+    deselectNote();
 
     activeFolder = folderItem;
-
-    activeFolder.classList.add('selected');
-
-    editorArea.classList.add('empty-state');
+    if (activeFolder) {
+      editorArea.classList.add('empty-state');
+      activeFolder.classList.add('selected');
+    }
   }
 
   function deselectFolder() {
-    document
-      .querySelectorAll('.folder-item')
-      .forEach(item => {
-        item.classList.remove('selected');
-      });
-
+    document.querySelectorAll('.folder-item').forEach(item => item.classList.remove('selected'));
     activeFolder = null;
-
     if (!activeNote) {
       editorArea.classList.add('empty-state');
     }
   }
 
-  /*
-   * ============================================================
-   * 폴더 내 노트 개수
-   * ============================================================
-   */
-
   function updateFolderCounts() {
-    const wrappers =
-      document.querySelectorAll('.folder-wrapper');
-
+    const wrappers = document.querySelectorAll('.folder-wrapper');
     wrappers.forEach(wrapper => {
-      const folderId =
-        wrapper.dataset.id;
-
-      const badge =
-        wrapper.querySelector(
-          '.folder-count-badge'
-        );
-
-      if (!badge) return;
-
-      const count =
-        notesData.notes.filter(note =>
-          note.folderId === folderId &&
-          !note.trashed
-        ).length;
-
-      badge.textContent = count;
+      const childrenContainer = wrapper.querySelector('.folder-children');
+      const badge = wrapper.querySelector('.folder-count-badge');
+      if (childrenContainer && badge) {
+        const noteCount = childrenContainer.querySelectorAll('.frame_20:not([data-category="trash"])').length;
+        badge.textContent = noteCount;
+      }
     });
   }
 
-  /*
-   * ============================================================
-   * 노트 선택
-   * ============================================================
-   */
+  /* 새 노트 생성 함수 */
+  function createNewNote() {
+    if (currentCategory === 'trash') {
+      alert("휴지통에서는 새 메모를 생성할 수 없습니다.");
+      return;
+    }
+
+    if (currentCategory === 'folders' && !activeFolder) {
+      alert("노트를 생성할 폴더를 먼저 선택해주세요.");
+      return;
+    }
+
+    const targetCategory = currentCategory;
+
+    const noteCard = document.createElement('div');
+    noteCard.className = 'frame_20_l frame_20';
+    noteCard.style.cursor = 'pointer';
+    noteCard.dataset.category = targetCategory;
+
+    const nowTimestamp = Date.now();
+
+    noteCard.innerHTML = `
+      <span class='text_7_l text_7 card-title'>제목 없음</span>
+      <span class='text_8_l card-content'>내용 없음</span>
+      <span class='text_8_l card-time' data-updated-at="${nowTimestamp}">방금 전</span>
+    `;
+
+    if (activeFolder) {
+      const childrenContainer = activeFolder.nextElementSibling;
+      if (childrenContainer && childrenContainer.classList.contains('folder-children')) {
+        childrenContainer.prepend(noteCard);
+        childrenContainer.classList.remove('collapsed');
+        const arrow = activeFolder.querySelector('.arrow-icon');
+        if (arrow) arrow.textContent = '▼';
+      }
+    } else {
+      noteList.prepend(noteCard);
+    }
+
+    noteCard.addEventListener('click', (e) => {
+      e.stopPropagation();
+      selectNote(noteCard);
+    });
+
+    updateFolderCounts();
+    selectNote(noteCard);
+    filterNotes(searchInput ? searchInput.value : '');
+  }
 
   function selectNote(noteCard) {
     if (activeNote === noteCard) {
@@ -939,761 +479,63 @@
     deselectNote();
 
     activeNote = noteCard;
+    if (activeNote) {
+      editorArea.classList.remove('empty-state');
+      activeNote.classList.add('selected');
+      
+      const titleSpan = noteCard.querySelector('.card-title');
+      const contentSpan = noteCard.querySelector('.card-content');
+      const timeSpan = noteCard.querySelector('.card-time');
 
-    activeNote.classList.add('selected');
+      const fullTitle = titleSpan.dataset.fullTitle ?? (titleSpan.textContent.replace(' ◀', '') === '제목 없음' ? '' : titleSpan.textContent.replace(' ◀', ''));
+      const fullContent = contentSpan.dataset.fullContent ?? '';
+      const timestamp = Number(timeSpan.dataset.updatedAt);
 
-    editorArea.classList.remove('empty-state');
+      renderNoteTitle(titleSpan, fullTitle, true);
 
-    const noteId =
-      noteCard.dataset.id;
+      inputTitle.value = fullTitle;
+      inputContent.value = fullContent;
+      
+      if (lastModified && timestamp) {
+        lastModified.textContent = `최종 수정일: ${getFormattedDate(new Date(timestamp))}`;
+      }
 
-    const note =
-      notesData.notes.find(
-        item => item.id === noteId
-      );
-
-    if (!note) return;
-
-    const titleSpan =
-      noteCard.querySelector('.card-title');
-
-    renderNoteTitle(
-      titleSpan,
-      note.title || '',
-      true
-    );
-
-    inputTitle.value =
-      note.title || '';
-
-    /*
-     * contenteditable은 value가 아니라 innerHTML
-     */
-    inputContent.innerHTML =
-      note.content || '';
-
-    if (lastModified) {
-      lastModified.textContent =
-        `최종 수정일: ${getFormattedDate(
-          new Date(note.updatedAt)
-        )}`;
+      updateEditorReadOnlyState();
     }
-
-    updateEditorReadOnlyState();
   }
-
-  /*
-   * ============================================================
-   * 노트 선택 해제
-   * ============================================================
-   */
 
   function deselectNote() {
     if (activeNote) {
-      const titleSpan =
-        activeNote.querySelector('.card-title');
-
-      const note =
-        notesData.notes.find(
-          item => item.id === activeNote.dataset.id
-        );
-
-      renderNoteTitle(
-        titleSpan,
-        note ? note.title : '',
-        false
-      );
+      const titleSpan = activeNote.querySelector('.card-title');
+      const fullTitle = titleSpan.dataset.fullTitle ?? '';
+      renderNoteTitle(titleSpan, fullTitle, false);
     }
 
-    document
-      .querySelectorAll('.frame_20')
-      .forEach(card => {
-        card.classList.remove('selected');
-      });
-
+    document.querySelectorAll('.frame_20').forEach(card => card.classList.remove('selected'));
     activeNote = null;
-
     if (!activeFolder) {
       editorArea.classList.add('empty-state');
     }
-
     inputTitle.value = '';
-
-    inputContent.innerHTML = '';
-
-    if (lastModified) {
-      lastModified.textContent =
-        '최종 수정일: 없음';
-    }
-
+    inputContent.value = '';
+    if (lastModified) lastModified.textContent = '최종 수정일: 없음';
     updateEditorReadOnlyState();
   }
 
-  /*
-   * ============================================================
-   * 제목 표시
-   * ============================================================
-   */
-
-  function renderNoteTitle(
-    titleSpan,
-    rawTitle,
-    isSelected
-  ) {
-    let displayTitle =
-      (rawTitle || '').trim();
-
+  function renderNoteTitle(titleSpan, rawTitle, isSelected) {
+    let displayTitle = rawTitle.trim();
     if (displayTitle === '') {
       displayTitle = '제목 없음';
     } else if (displayTitle.length > 20) {
-      displayTitle =
-        displayTitle.slice(0, 20) + '...';
+      displayTitle = displayTitle.slice(0, 20) + '...';
     }
 
-    titleSpan.textContent =
-      isSelected
-        ? `${displayTitle} ◀`
-        : displayTitle;
-  }
-
-  /*
-   * ============================================================
-   * 제목 입력 저장
-   * ============================================================
-   */
-
-  inputTitle.addEventListener('input', (e) => {
-    if (!activeNote) return;
-
-    if (currentCategory === 'trash') {
-      return;
-    }
-
-    const note =
-      notesData.notes.find(
-        item => item.id === activeNote.dataset.id
-      );
-
-    if (!note) return;
-
-    const value =
-      e.target.value;
-
-    note.title = value;
-
-    const titleSpan =
-      activeNote.querySelector('.card-title');
-
-    titleSpan.dataset.fullTitle =
-      value;
-
-    renderNoteTitle(
-      titleSpan,
-      value,
-      true
-    );
-
-    updateTimestamp();
-  });
-
-  /*
-   * ============================================================
-   * 내용 입력 저장
-   * ============================================================
-   */
-
-  inputContent.addEventListener('input', () => {
-    if (!activeNote) return;
-
-    if (currentCategory === 'trash') {
-      return;
-    }
-
-    const note =
-      notesData.notes.find(
-        item => item.id === activeNote.dataset.id
-      );
-
-    if (!note) return;
-
-    /*
-     * HTML 형식 그대로 저장
-     *
-     * 예:
-     * <b>굵은 글씨</b>
-     * <h3>제목</h3>
-     * <ul><li>목록</li></ul>
-     */
-    note.content =
-      inputContent.innerHTML;
-
-    const contentSpan =
-      activeNote.querySelector('.card-content');
-
-    contentSpan.dataset.fullContent =
-      note.content;
-
-    updateContentPreview(
-      contentSpan,
-      note.content
-    );
-
-    updateTimestamp();
-  });
-
-  /*
-   * ============================================================
-   * 검색 / 필터
-   * ============================================================
-   */
-
-  function filterNotes(keyword = '') {
-    const query =
-      keyword.toLowerCase().trim();
-
-    const noteCards =
-      noteList.querySelectorAll('.frame_20');
-
-    const folderWrappers =
-      noteList.querySelectorAll(
-        '.folder-wrapper'
-      );
-
-    /*
-     * Folders
-     */
-    if (currentCategory === 'folders') {
-      newFolderBtn.classList.remove('hidden');
-
-      foldersHeader.style.display = 'block';
-
-      trashActionArea.style.display = 'none';
-
-      searchInput.placeholder =
-        'Folders Search...';
-
-      folderWrappers.forEach(wrapper => {
-        const folderId =
-          wrapper.dataset.id;
-
-        const folder =
-          notesData.folders.find(
-            item => item.id === folderId
-          );
-
-        if (!folder || folder.trashed) {
-          wrapper.style.display = 'none';
-          return;
-        }
-
-        const matches =
-          folder.name
-            .toLowerCase()
-            .includes(query);
-
-        wrapper.style.display =
-          matches ? 'block' : 'none';
-      });
-
-      noteCards.forEach(card => {
-        const note =
-          notesData.notes.find(
-            item => item.id === card.dataset.id
-          );
-
-        if (!note) return;
-
-        if (note.folderId) {
-          card.style.display =
-            note.trashed ? 'none' : 'flex';
-        } else {
-          card.style.display = 'none';
-        }
-      });
-
-      return;
-    }
-
-    newFolderBtn.classList.add('hidden');
-
-    foldersHeader.style.display = 'none';
-
-    /*
-     * Trash
-     */
-    if (currentCategory === 'trash') {
-      trashActionArea.style.display = 'flex';
-
-      searchInput.placeholder =
-        'Trash Search...';
-
-      folderWrappers.forEach(wrapper => {
-        const folderId =
-          wrapper.dataset.id;
-
-        const folder =
-          notesData.folders.find(
-            item => item.id === folderId
-          );
-
-        if (folder && folder.trashed) {
-          wrapper.style.display = 'block';
-
-          const folderItem =
-            wrapper.querySelector('.folder-item');
-
-          if (folderItem) {
-            folderItem.style.display = 'flex';
-          }
-        } else {
-          wrapper.style.display = 'contents';
-
-          const folderItem =
-            wrapper.querySelector('.folder-item');
-
-          if (folderItem) {
-            folderItem.style.display = 'none';
-          }
-        }
-      });
+    if (isSelected) {
+      titleSpan.textContent = `${displayTitle} ◀`;
     } else {
-      trashActionArea.style.display = 'none';
-
-      searchInput.placeholder =
-        'Notes Search...';
-
-      folderWrappers.forEach(wrapper => {
-        wrapper.style.display = 'none';
-      });
+      titleSpan.textContent = displayTitle;
     }
-
-    /*
-     * 노트 필터
-     */
-    noteCards.forEach(card => {
-      const note =
-        notesData.notes.find(
-          item => item.id === card.dataset.id
-        );
-
-      if (!note) return;
-
-      const title =
-        (note.title || '').toLowerCase();
-
-      const content =
-        (note.content || '')
-          .replace(/<[^>]*>/g, '')
-          .toLowerCase();
-
-      const matchesQuery =
-        query === '' ||
-        title.includes(query) ||
-        content.includes(query);
-
-      let matchesCategory = false;
-
-      if (currentCategory === 'all') {
-        matchesCategory =
-          !note.trashed &&
-          !note.folderId;
-      } else if (currentCategory === 'quick') {
-        matchesCategory =
-          !note.trashed &&
-          note.category === 'quick';
-      } else if (currentCategory === 'trash') {
-        matchesCategory =
-          note.trashed;
-      }
-
-      card.style.display =
-        matchesCategory && matchesQuery
-          ? 'flex'
-          : 'none';
-    });
   }
-
-  /*
-   * ============================================================
-   * 메뉴 아이콘
-   * ============================================================
-   */
-
-  function updateMenuIcons(selected) {
-    allNotesImg.src =
-      selected === 'all'
-        ? 'notesIcon/All Notes(on).png'
-        : 'notesIcon/All Notes(off).png';
-
-    quickNotesImg.src =
-      selected === 'quick'
-        ? 'notesIcon/Quick Notes(on).png'
-        : 'notesIcon/Quick Notes(off).png';
-
-    foldersImg.src =
-      selected === 'folders'
-        ? 'notesIcon/Folders(on).png'
-        : 'notesIcon/Folders(off).png';
-
-    if (selected === 'trash') {
-      trashImg.classList.add('icon-blue');
-    } else {
-      trashImg.classList.remove('icon-blue');
-    }
-
-    updateEditorReadOnlyState();
-  }
-
-  /*
-   * ============================================================
-   * All Notes
-   * ============================================================
-   */
-
-  allNotesBtn.addEventListener('click', () => {
-    currentCategory = 'all';
-
-    updateMenuIcons('all');
-
-    searchInput.value = '';
-
-    deselectNote();
-    deselectFolder();
-
-    filterNotes('');
-  });
-
-  /*
-   * ============================================================
-   * Quick Notes
-   * ============================================================
-   */
-
-  quickNotesBtn.addEventListener('click', () => {
-    currentCategory = 'quick';
-
-    updateMenuIcons('quick');
-
-    searchInput.value = '';
-
-    deselectNote();
-    deselectFolder();
-
-    filterNotes('');
-  });
-
-  /*
-   * ============================================================
-   * Folders
-   * ============================================================
-   */
-
-  foldersBtn.addEventListener('click', () => {
-    currentCategory = 'folders';
-
-    updateMenuIcons('folders');
-
-    searchInput.value = '';
-
-    deselectNote();
-    deselectFolder();
-
-    filterNotes('');
-  });
-
-  /*
-   * ============================================================
-   * Trash
-   * ============================================================
-   */
-
-  trashBtn.addEventListener('click', () => {
-    /*
-     * 선택된 노트 → 휴지통
-     */
-    if (
-      activeNote &&
-      currentCategory !== 'trash'
-    ) {
-      const note =
-        notesData.notes.find(
-          item => item.id === activeNote.dataset.id
-        );
-
-      if (note) {
-        note.trashed = true;
-        note.category = 'trash';
-      }
-
-      saveData();
-
-      deselectNote();
-
-      renderAll();
-
-      currentCategory = 'trash';
-
-      updateMenuIcons('trash');
-
-      filterNotes('');
-      return;
-    }
-
-    /*
-     * 선택된 폴더 → 휴지통
-     */
-    if (
-      activeFolder &&
-      currentCategory === 'folders'
-    ) {
-      const folderId =
-        activeFolder.dataset.id;
-
-      const folder =
-        notesData.folders.find(
-          item => item.id === folderId
-        );
-
-      if (folder) {
-        folder.trashed = true;
-      }
-
-      /*
-       * 폴더 안의 모든 노트도 휴지통
-       */
-      notesData.notes.forEach(note => {
-        if (note.folderId === folderId) {
-          note.trashed = true;
-          note.category = 'trash';
-        }
-      });
-
-      saveData();
-
-      deselectFolder();
-
-      renderAll();
-
-      currentCategory = 'trash';
-
-      updateMenuIcons('trash');
-
-      filterNotes('');
-      return;
-    }
-
-    /*
-     * 아무것도 선택하지 않았으면
-     * 휴지통 페이지로 이동
-     */
-    currentCategory = 'trash';
-
-    updateMenuIcons('trash');
-
-    searchInput.value = '';
-
-    deselectNote();
-    deselectFolder();
-
-    filterNotes('');
-  });
-
-  /*
-   * ============================================================
-   * 복원
-   * ============================================================
-   */
-
-  restoreNoteBtn.addEventListener('click', () => {
-    /*
-     * 노트 복원
-     */
-    if (
-      activeNote &&
-      activeNote.dataset.category === 'trash'
-    ) {
-      const note =
-        notesData.notes.find(
-          item => item.id === activeNote.dataset.id
-        );
-
-      if (note) {
-        note.trashed = false;
-
-        /*
-         * 폴더에 속해 있으면 folder,
-         * 아니면 all
-         */
-        note.category =
-          note.folderId
-            ? 'folder'
-            : 'all';
-      }
-
-      saveData();
-
-      deselectNote();
-
-      renderAll();
-
-      filterNotes(
-        searchInput.value
-      );
-
-      return;
-    }
-
-    /*
-     * 폴더 복원
-     */
-    if (activeFolder) {
-      const folderId =
-        activeFolder.dataset.id;
-
-      const folder =
-        notesData.folders.find(
-          item => item.id === folderId
-        );
-
-      if (
-        folder &&
-        folder.trashed
-      ) {
-        folder.trashed = false;
-
-        notesData.notes.forEach(note => {
-          if (note.folderId === folderId) {
-            note.trashed = false;
-
-            note.category = 'folder';
-          }
-        });
-
-        saveData();
-
-        deselectFolder();
-
-        renderAll();
-
-        filterNotes(
-          searchInput.value
-        );
-      }
-    }
-  });
-
-  /*
-   * ============================================================
-   * 휴지통 비우기
-   * ============================================================
-   */
-
-  emptyTrashBtn.addEventListener('click', () => {
-    const trashNotes =
-      notesData.notes.filter(
-        note => note.trashed
-      );
-
-    const trashFolders =
-      notesData.folders.filter(
-        folder => folder.trashed
-      );
-
-    if (
-      trashNotes.length === 0 &&
-      trashFolders.length === 0
-    ) {
-      alert('휴지통이 비어있습니다.');
-      return;
-    }
-
-    const confirmed =
-      confirm(
-        '휴지통에 있는 모든 항목을 영구 삭제하시겠습니까? 복원할 수 없습니다.'
-      );
-
-    if (!confirmed) {
-      return;
-    }
-
-    /*
-     * 휴지통 노트 삭제
-     */
-    notesData.notes =
-      notesData.notes.filter(
-        note => !note.trashed
-      );
-
-    /*
-     * 휴지통 폴더 삭제
-     */
-    const deletedFolderIds =
-      notesData.folders
-        .filter(folder => folder.trashed)
-        .map(folder => folder.id);
-
-    notesData.folders =
-      notesData.folders.filter(
-        folder => !folder.trashed
-      );
-
-    /*
-     * 삭제된 폴더에 속했던 노트도 삭제
-     */
-    notesData.notes =
-      notesData.notes.filter(
-        note =>
-          !deletedFolderIds.includes(
-            note.folderId
-          )
-      );
-
-    saveData();
-
-    deselectNote();
-    deselectFolder();
-
-    renderAll();
-
-    filterNotes(
-      searchInput.value
-    );
-  });
-
-  /*
-   * ============================================================
-   * 검색
-   * ============================================================
-   */
-
-  searchInput.addEventListener(
-    'input',
-    (e) => {
-      filterNotes(e.target.value);
-    }
-  );
-
-  /*
-   * ============================================================
-   * 버튼
-   * ============================================================
-   */
-
-  newNoteBtn.addEventListener(
-    'click',
-    createNewNote
-  );
-
-  newFolderBtn.addEventListener(
-    'click',
-    createFolder
-  );
-
-  /*
-   * ============================================================
-   * 빈 공간 클릭
-   * ============================================================
-   */
 
   noteList.addEventListener('click', (e) => {
     if (e.target === noteList) {
@@ -1702,32 +544,279 @@
     }
   });
 
-  /*
-   * ============================================================
-   * 초기화
-   * ============================================================
-   */
+  inputTitle.addEventListener('input', (e) => {
+    if (!activeNote || currentCategory === 'trash') return;
+    const value = e.target.value.trim();
+    const titleSpan = activeNote.querySelector('.card-title');
+    
+    titleSpan.dataset.fullTitle = value;
+    renderNoteTitle(titleSpan, value, true);
 
-  loadData();
+    updateTimestamp();
+    filterNotes(searchInput ? searchInput.value : '');
+  });
 
-  renderAll();
+  inputContent.addEventListener('input', (e) => {
+    if (!activeNote || currentCategory === 'trash') return;
+    const value = e.target.value;
+    const contentSpan = activeNote.querySelector('.card-content');
+    
+    contentSpan.dataset.fullContent = value;
 
+    if (value.trim() === '') {
+      contentSpan.textContent = '내용 없음';
+    } else if (value.length > 20) {
+      contentSpan.textContent = value.slice(0, 20) + '...';
+    } else {
+      contentSpan.textContent = value;
+    }
+
+    updateTimestamp();
+  });
+
+  function filterNotes(keyword = '') {
+    const query = keyword.toLowerCase().trim();
+    const noteCards = noteList.querySelectorAll('.frame_20');
+    const folderWrappers = noteList.querySelectorAll('.folder-wrapper');
+
+    // 'folders' 카테고리인 경우
+    if (currentCategory === 'folders') {
+      if (newFolderBtn) newFolderBtn.classList.remove('hidden');
+      foldersHeader.style.display = 'block';
+      trashActionArea.style.display = 'none';
+      if (searchInput) searchInput.placeholder = 'Folders Search...';
+
+      folderWrappers.forEach(wrapper => {
+        if (wrapper.dataset.folderTrash === 'true') {
+          wrapper.style.display = 'none';
+        } else {
+          wrapper.style.display = 'block';
+          const folderItem = wrapper.querySelector('.folder-item');
+          if (folderItem) folderItem.style.display = 'flex';
+        }
+      });
+      
+      noteCards.forEach(card => {
+        const isTrash = card.dataset.category === 'trash';
+        if (!isTrash && card.parentElement.classList.contains('folder-children')) {
+          card.style.display = 'flex';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+      return;
+    }
+
+    if (newFolderBtn) newFolderBtn.classList.add('hidden');
+    foldersHeader.style.display = 'none';
+
+    // 'trash' 카테고리인 경우
+    if (currentCategory === 'trash') {
+      trashActionArea.style.display = 'flex';
+      if (searchInput) searchInput.placeholder = 'Trash Search...';
+
+      folderWrappers.forEach(wrapper => {
+        if (wrapper.dataset.folderTrash === 'true') {
+          wrapper.style.display = 'block';
+          const folderItem = wrapper.querySelector('.folder-item');
+          if (folderItem) folderItem.style.display = 'flex';
+        } else {
+          wrapper.style.display = 'contents';
+          const folderItem = wrapper.querySelector('.folder-item');
+          if (folderItem) folderItem.style.display = 'none';
+        }
+      });
+    } else {
+      trashActionArea.style.display = 'none';
+      if (searchInput) searchInput.placeholder = 'Notes Search...';
+
+      folderWrappers.forEach(wrapper => {
+        wrapper.style.display = 'none';
+      });
+    }
+
+    // 메모 카드 필터링
+    noteCards.forEach(card => {
+      const titleSpan = card.querySelector('.card-title');
+      const fullTitle = (titleSpan.dataset.fullTitle ?? titleSpan.textContent).toLowerCase();
+      const noteCategory = card.dataset.category || 'all';
+
+      let matchesCategory = false;
+      if (currentCategory === 'all') {
+        matchesCategory = noteCategory !== 'trash';
+      } else {
+        matchesCategory = noteCategory === currentCategory;
+      }
+
+      const matchesQuery = fullTitle.includes(query) || query === '';
+
+      if (matchesCategory && matchesQuery) {
+        card.style.display = 'flex';
+      } else {
+        card.style.display = 'none';
+      }
+    });
+  }
+
+  function updateMenuIcons(selected) {
+    if (allNotesImg) allNotesImg.src = selected === 'all' ? 'notesIcon/All Notes(on).png' : 'notesIcon/All Notes(off).png';
+    if (quickNotesImg) quickNotesImg.src = selected === 'quick' ? 'notesIcon/Quick Notes(on).png' : 'notesIcon/Quick Notes(off).png';
+    if (foldersImg) foldersImg.src = selected === 'folders' ? 'notesIcon/Folders(on).png' : 'notesIcon/Folders(off).png';
+    
+    if (trashImg) {
+      if (selected === 'trash') {
+        trashImg.classList.add('icon-blue');
+      } else {
+        trashImg.classList.remove('icon-blue');
+      }
+    }
+
+    updateEditorReadOnlyState();
+  }
+
+  if (allNotesBtn) {
+    allNotesBtn.addEventListener('click', () => {
+      currentCategory = 'all';
+      updateMenuIcons('all');
+      if (searchInput) searchInput.value = '';
+      deselectNote();
+      deselectFolder();
+      filterNotes('');
+    });
+  }
+
+  if (quickNotesBtn) {
+    quickNotesBtn.addEventListener('click', () => {
+      currentCategory = 'quick';
+      updateMenuIcons('quick');
+      if (searchInput) searchInput.value = '';
+      deselectNote();
+      deselectFolder();
+      filterNotes('');
+    });
+  }
+
+  if (foldersBtn) {
+    foldersBtn.addEventListener('click', () => {
+      currentCategory = 'folders';
+      updateMenuIcons('folders');
+      if (searchInput) searchInput.value = '';
+      deselectNote();
+      deselectFolder();
+      filterNotes('');
+    });
+  }
+
+  /* Trash 버튼 클릭 이벤트 (휴지통 이동) */
+  if (trashBtn) {
+    trashBtn.addEventListener('click', () => {
+      if (activeNote && currentCategory !== 'trash') {
+        activeNote.dataset.category = 'trash';
+        deselectNote();
+        updateFolderCounts();
+        filterNotes(searchInput ? searchInput.value : '');
+      } 
+      else if (activeFolder && currentCategory === 'folders') {
+        const folderWrapper = activeFolder.closest('.folder-wrapper');
+        if (folderWrapper) {
+          folderWrapper.dataset.folderTrash = 'true';
+
+          const childNotes = folderWrapper.querySelectorAll('.frame_20');
+          childNotes.forEach(card => {
+            card.dataset.category = 'trash';
+          });
+
+          deselectFolder();
+          updateFolderCounts();
+          filterNotes(searchInput ? searchInput.value : '');
+        }
+      } 
+      else {
+        currentCategory = 'trash';
+        updateMenuIcons('trash');
+        if (searchInput) searchInput.value = '';
+        deselectNote();
+        deselectFolder();
+        filterNotes('');
+      }
+    });
+  }
+
+  /* 선택 항목 복원 (메모 및 폴더 대응) */
+  if (restoreNoteBtn) {
+    restoreNoteBtn.addEventListener('click', () => {
+      // 1. 메모가 선택되어 있을 때 복원
+      if (activeNote && activeNote.dataset.category === 'trash') {
+        activeNote.dataset.category = 'all';
+
+        const folderWrapper = activeNote.closest('.folder-wrapper');
+        if (folderWrapper && folderWrapper.dataset.folderTrash === 'true') {
+          delete folderWrapper.dataset.folderTrash;
+        }
+
+        deselectNote();
+        updateFolderCounts();
+        filterNotes(searchInput ? searchInput.value : '');
+      }
+      // 2. 폴더가 선택되어 있을 때 복원
+      else if (activeFolder) {
+        const folderWrapper = activeFolder.closest('.folder-wrapper');
+        if (folderWrapper && folderWrapper.dataset.folderTrash === 'true') {
+          delete folderWrapper.dataset.folderTrash;
+
+          const childNotes = folderWrapper.querySelectorAll('.frame_20');
+          childNotes.forEach(card => {
+            card.dataset.category = 'all';
+          });
+
+          deselectFolder();
+          updateFolderCounts();
+          filterNotes(searchInput ? searchInput.value : '');
+        }
+      }
+    });
+  }
+
+  /* 휴지통 비우기 (영구 삭제) */
+  if (emptyTrashBtn) {
+    emptyTrashBtn.addEventListener('click', () => {
+      const trashNotes = noteList.querySelectorAll('.frame_20[data-category="trash"]');
+      const trashFolders = noteList.querySelectorAll('.folder-wrapper[data-folder-trash="true"]');
+
+      if (trashNotes.length === 0 && trashFolders.length === 0) {
+        alert('휴지통이 비어있습니다.');
+        return;
+      }
+
+      if (confirm('휴지통에 있는 모든 항목을 영구 삭제하시겠습니까? 복원할 수 없습니다.')) {
+        trashNotes.forEach(card => card.remove());
+        trashFolders.forEach(folder => folder.remove());
+        deselectNote();
+        deselectFolder();
+        updateFolderCounts();
+        filterNotes(searchInput ? searchInput.value : '');
+      }
+    });
+  }
+
+  if (searchInput) {
+    searchInput.addEventListener('input', (e) => filterNotes(e.target.value));
+  }
+
+  if (newNoteBtn) {
+    newNoteBtn.addEventListener('click', () => createNewNote());
+  }
+
+  if (newFolderBtn) {
+    newFolderBtn.addEventListener('click', () => createFolder());
+  }
+
+  // 초기 상태 설정
   deselectNote();
   deselectFolder();
-
-  currentCategory = 'all';
-
-  updateMenuIcons('all');
-
   filterNotes('');
 
-  /*
-   * 10초마다 시간 표시 갱신
-   */
-  setInterval(
-    refreshAllNoteTimes,
-    10000
-  );
+  setInterval(refreshAllNoteTimes, 10000);
 </script>
 </body>
 </html>
