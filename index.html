@@ -1,0 +1,1565 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>노트 웹</title>
+  <link rel="stylesheet" href="all notes UI.css">
+</head>
+<body>
+  <div class='frame_0_l frame_0'>
+    <div class='frame_1_l frame_1'>
+      <!-- 앱 타이틀 영역 -->
+      <div class='frame_2_l frame_2'>
+        <div class='frame_3_l frame_3'>
+          <img src='notesIcon/Icon.png' class='frame_4_l' />
+          <span class='text_0_l text_0'>Notes</span>
+        </div>
+      </div>
+
+      <!-- 상단 액션 버튼 영역 -->
+      <div class="action-btn-container">
+        <button id="newNoteBtn" type="button" class="primary-blue-btn">
+          <span>+ New Note</span>
+        </button>
+        <button id="newFolderBtn" type="button" class="primary-blue-btn hidden">
+          <span>+ New Folder</span>
+        </button>
+      </div>
+
+      <!-- 메뉴 버튼 영역 -->
+      <div class='frame_7_l frame_7' style="gap: 4px;">
+        <button type="button" class='menu-btn' id="allNotesBtn">
+          <img src='notesIcon/All Notes(on).png' id="allNotesImg" />
+          <span>All Notes</span>
+        </button>
+
+        <button type="button" class='menu-btn' id="quickNotesBtn">
+          <img src='notesIcon/Quick Notes(off).png' id="quickNotesImg" />
+          <span>Quick Notes</span>
+        </button>
+
+        <button type="button" class='menu-btn' id="foldersBtn">
+          <img src='notesIcon/Folders(off).png' id="foldersImg" />
+          <span>Folders</span>
+        </button>
+
+        <button type="button" class='menu-btn' id="trashBtn">
+          <img src='notesIcon/trash.png' id="trashImg" />
+          <span>Trash</span>
+        </button>
+      </div>
+    </div>
+
+    <div class='frame_16_l frame_16'>
+      <div class='frame_17_l frame_17'>
+        <img src='toolImage/search.png' class='frame_18_l' />
+        <input type="text" id="searchInput" class='text_6_l text_6' placeholder="Notes Search..." />
+      </div>
+      
+      <!-- Folders 페이지 헤더 및 컨테이너 -->
+      <div id="foldersHeader" class="folder-header-title" style="display: none;">All Folders</div>
+      <div class='frame_19_l frame_19' id="noteList" style="flex: 1; overflow-y: auto;">
+        <!-- 노트 목록 및 폴더 트리가 들어가는 영역 -->
+      </div>
+
+      <!-- Trash 전용 하단 액션 버튼 영역 -->
+      <div id="trashActionArea" class="trash-action-area" style="display: none;">
+        <button type="button" class="trash-btn-action" id="restoreNoteBtn">선택 노트 복원</button>
+        <button type="button" class="trash-btn-action btn-empty-trash" id="emptyTrashBtn">휴지통 비우기</button>
+      </div>
+    </div>
+
+    <!-- 오른쪽 메모 작성 영역 -->
+    <div class='frame_21_l frame_21 empty-state' id="editorArea">
+      <div class='frame_22_l frame_22'>
+        <input type="text" class='text_10_l text_10' id="inputTitle" placeholder="제목을 입력하세요" />
+        <span class='text_11_l text_11' id="lastModified">최종 수정일: 방금 전</span>
+      </div>
+      <div class='frame_23_l frame_23'>
+        <div class='frame_24_l frame_24' id='btnBold' style='cursor:pointer;'><span class='tool'>B</span></div>
+        <div class='frame_25_l frame_25' id='btnItalic' style='cursor:pointer;'><span class='tool'>I</span></div>
+        <div class='frame_26_l frame_26' id='btnUnderline' style='cursor:pointer;'><span class='tool'>U</span></div>
+        <img src='toolImage/strikethrough.png' class='frame_27_l' id='btnStrike' style='cursor:pointer;' />
+        <img src='toolImage/list.png' class='frame_28_l' id='btnList' style='cursor:pointer;' />
+        <img src='toolImage/hash.png' class='frame_29_l' id='btnHeading' style='cursor:pointer;' />
+        <img src='toolImage/link.png' class='frame_31_l' id='btnLink' style='cursor:pointer;' />
+      </div>
+      <div class='frame_32_l frame_32'>
+        <div class='frame_32_l frame_32'>
+          <div id="inputContent" contenteditable="true" spellcheck="false" placeholder="내용을 입력하세요..."></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  /* =========================================================
+     Notes App - localStorage version
+     ========================================================= */
+
+  const STORAGE_KEY = 'notesWebData';
+
+  /* -----------------------------
+     DOM
+  ----------------------------- */
+
+  const newNoteBtn = document.getElementById('newNoteBtn');
+  const newFolderBtn = document.getElementById('newFolderBtn');
+
+  const allNotesBtn = document.getElementById('allNotesBtn');
+  const quickNotesBtn = document.getElementById('quickNotesBtn');
+  const foldersBtn = document.getElementById('foldersBtn');
+  const trashBtn = document.getElementById('trashBtn');
+
+  const allNotesImg = document.getElementById('allNotesImg');
+  const quickNotesImg = document.getElementById('quickNotesImg');
+  const foldersImg = document.getElementById('foldersImg');
+  const trashImg = document.getElementById('trashImg');
+
+  const noteList = document.getElementById('noteList');
+  const foldersHeader = document.getElementById('foldersHeader');
+  const trashActionArea = document.getElementById('trashActionArea');
+
+  const restoreNoteBtn = document.getElementById('restoreNoteBtn');
+  const emptyTrashBtn = document.getElementById('emptyTrashBtn');
+
+  const editorArea = document.getElementById('editorArea');
+  const inputTitle = document.getElementById('inputTitle');
+  const inputContent = document.getElementById('inputContent');
+
+  const searchInput = document.getElementById('searchInput');
+  const lastModified = document.getElementById('lastModified');
+
+  const btnBold = document.getElementById('btnBold');
+  const btnItalic = document.getElementById('btnItalic');
+  const btnUnderline = document.getElementById('btnUnderline');
+  const btnStrike = document.getElementById('btnStrike');
+  const btnList = document.getElementById('btnList');
+  const btnHeading = document.getElementById('btnHeading');
+  const btnLink = document.getElementById('btnLink');
+
+  /* -----------------------------
+     상태
+  ----------------------------- */
+
+  let activeNoteId = null;
+  let activeFolderId = null;
+  let currentCategory = 'all';
+
+  /*
+    데이터 구조
+
+    {
+      folders: [
+        {
+          id,
+          name,
+          parentId,
+          deleted,
+          collapsed
+        }
+      ],
+
+      notes: [
+        {
+          id,
+          title,
+          content,
+          folderId,
+          category,
+          deleted,
+          createdAt,
+          updatedAt
+        }
+      ]
+    }
+  */
+
+  let appData = loadData();
+
+  /* =========================================================
+     localStorage
+     ========================================================= */
+
+  function createDefaultData() {
+    return {
+      folders: [],
+      notes: []
+    };
+  }
+
+  function loadData() {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+
+      if (!saved) {
+        return createDefaultData();
+      }
+
+      const parsed = JSON.parse(saved);
+
+      return {
+        folders: Array.isArray(parsed.folders) ? parsed.folders : [],
+        notes: Array.isArray(parsed.notes) ? parsed.notes : []
+      };
+    } catch (error) {
+      console.error('localStorage 데이터를 불러오지 못했습니다.', error);
+      return createDefaultData();
+    }
+  }
+
+  function saveData() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+    } catch (error) {
+      console.error('localStorage 저장 실패:', error);
+      alert('저장 공간이 부족하거나 브라우저에서 저장을 허용하지 않습니다.');
+    }
+  }
+
+  function generateId(prefix = 'id') {
+    return (
+      prefix +
+      '_' +
+      Date.now().toString(36) +
+      '_' +
+      Math.random().toString(36).substring(2, 9)
+    );
+  }
+
+  /* =========================================================
+     날짜
+     ========================================================= */
+
+  function getFormattedDate(dateObj) {
+    const year = dateObj.getFullYear();
+    const month = dateObj.getMonth() + 1;
+    const date = dateObj.getDate();
+
+    let hours = dateObj.getHours();
+
+    const minutes = String(dateObj.getMinutes()).padStart(2, '0');
+
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+
+    hours = hours % 12;
+    hours = hours || 12;
+
+    const formattedHours = String(hours).padStart(2, '0');
+
+    return `${year}년 ${month}월 ${date}일 ${ampm} ${formattedHours}:${minutes}`;
+  }
+
+  function getElapsedTimeStr(updatedTimestamp) {
+    if (!updatedTimestamp) {
+      return '방금 전';
+    }
+
+    const now = Date.now();
+
+    const diffInSeconds = Math.max(
+      0,
+      Math.floor((now - Number(updatedTimestamp)) / 1000)
+    );
+
+    if (diffInSeconds < 60) {
+      return '방금 전';
+    }
+
+    const diffInMinutes = Math.floor(diffInSeconds / 60);
+
+    if (diffInMinutes < 60) {
+      return `${diffInMinutes}분 전`;
+    }
+
+    const diffInHours = Math.floor(diffInMinutes / 60);
+
+    if (diffInHours < 24) {
+      return `${diffInHours}시간 전`;
+    }
+
+    const diffInDays = Math.floor(diffInHours / 24);
+
+    if (diffInDays < 30) {
+      return `${diffInDays}일 전`;
+    }
+
+    const diffInMonths = Math.floor(diffInDays / 30);
+
+    if (diffInMonths < 12) {
+      return `${diffInMonths}달 전`;
+    }
+
+    const diffInYears = Math.floor(diffInDays / 365);
+
+    return `${diffInYears}년 전`;
+  }
+
+  /* =========================================================
+     ID / 데이터 찾기
+     ========================================================= */
+
+  function getNoteById(id) {
+    return appData.notes.find(note => note.id === id);
+  }
+
+  function getFolderById(id) {
+    return appData.folders.find(folder => folder.id === id);
+  }
+
+  /* =========================================================
+     Editor
+     ========================================================= */
+
+  function updateEditorReadOnlyState() {
+    const note = getNoteById(activeNoteId);
+
+    const isTrash =
+      currentCategory === 'trash' ||
+      (note && note.deleted === true);
+
+    if (isTrash) {
+      inputTitle.setAttribute('readonly', 'true');
+      inputContent.setAttribute('contenteditable', 'false');
+    } else {
+      inputTitle.removeAttribute('readonly');
+      inputContent.setAttribute('contenteditable', 'true');
+    }
+  }
+
+  function clearEditor() {
+    inputTitle.value = '';
+    inputContent.innerHTML = '';
+
+    lastModified.textContent = '최종 수정일: 없음';
+
+    editorArea.classList.add('empty-state');
+
+    activeNoteId = null;
+  }
+
+  function loadNoteIntoEditor(note) {
+    if (!note) {
+      clearEditor();
+      return;
+    }
+
+    inputTitle.value = note.title || '';
+
+    /*
+      HTML 편집기를 사용하기 때문에
+      content를 innerHTML로 불러옵니다.
+    */
+    inputContent.innerHTML = note.content || '';
+
+    if (note.updatedAt) {
+      lastModified.textContent =
+        `최종 수정일: ${getFormattedDate(new Date(note.updatedAt))}`;
+    }
+
+    editorArea.classList.remove('empty-state');
+
+    updateEditorReadOnlyState();
+  }
+
+  /* =========================================================
+     Note Card
+     ========================================================= */
+
+  function createNoteCard(note) {
+    const card = document.createElement('div');
+
+    card.className = 'frame_20_l frame_20';
+
+    card.style.cursor = 'pointer';
+
+    card.dataset.noteId = note.id;
+
+    const title =
+      note.title && note.title.trim()
+        ? note.title.trim()
+        : '제목 없음';
+
+    const content =
+      note.content
+        ? stripHtml(note.content).trim()
+        : '';
+
+    card.innerHTML = `
+      <span class="text_7_l text_7 card-title"></span>
+      <span class="text_8_l card-content"></span>
+      <span class="text_8_l card-time"></span>
+    `;
+
+    const titleSpan = card.querySelector('.card-title');
+    const contentSpan = card.querySelector('.card-content');
+    const timeSpan = card.querySelector('.card-time');
+
+    titleSpan.textContent = title;
+
+    if (!content) {
+      contentSpan.textContent = '내용 없음';
+    } else if (content.length > 20) {
+      contentSpan.textContent = content.slice(0, 20) + '...';
+    } else {
+      contentSpan.textContent = content;
+    }
+
+    timeSpan.textContent = getElapsedTimeStr(note.updatedAt);
+    timeSpan.dataset.updatedAt = note.updatedAt;
+
+    card.addEventListener('click', () => {
+      selectNote(note.id);
+    });
+
+    if (activeNoteId === note.id) {
+      card.classList.add('selected');
+
+      titleSpan.textContent =
+        `${title.length > 20 ? title.slice(0, 20) + '...' : title} ◀`;
+    }
+
+    return card;
+  }
+
+  function stripHtml(html) {
+    const temp = document.createElement('div');
+    temp.innerHTML = html;
+
+    return temp.textContent || temp.innerText || '';
+  }
+
+  /* =========================================================
+     Folder
+     ========================================================= */
+
+  function createFolderElement(folder) {
+    const wrapper = document.createElement('div');
+
+    wrapper.className = 'folder-wrapper';
+
+    wrapper.dataset.folderId = folder.id;
+
+    if (folder.deleted) {
+      wrapper.dataset.folderTrash = 'true';
+    }
+
+    const folderItem = document.createElement('div');
+
+    folderItem.className = 'folder-item';
+
+    if (activeFolderId === folder.id) {
+      folderItem.classList.add('selected');
+    }
+
+    const isCollapsed = folder.collapsed === true;
+
+    folderItem.innerHTML = `
+      <div class="folder-left">
+        <span class="arrow-icon">
+          ${isCollapsed ? '▶' : '▼'}
+        </span>
+
+        <span class="folder-icon">📁</span>
+
+        <span
+          class="folder-title"
+          contenteditable="true"
+          spellcheck="false"
+        ></span>
+      </div>
+
+      <span class="folder-count-badge">0</span>
+    `;
+
+    const childrenContainer = document.createElement('div');
+
+    childrenContainer.className = 'folder-children';
+
+    if (isCollapsed) {
+      childrenContainer.classList.add('collapsed');
+    }
+
+    wrapper.appendChild(folderItem);
+    wrapper.appendChild(childrenContainer);
+
+    const folderTitle =
+      folderItem.querySelector('.folder-title');
+
+    folderTitle.textContent =
+      folder.name || '새 폴더';
+
+    /*
+      폴더 이름 변경
+    */
+
+    folderTitle.addEventListener('input', () => {
+      const target = getFolderById(folder.id);
+
+      if (!target) {
+        return;
+      }
+
+      target.name =
+        folderTitle.textContent.trim() || '새 폴더';
+
+      saveData();
+    });
+
+    folderTitle.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        folderTitle.blur();
+      }
+    });
+
+    folderTitle.addEventListener('blur', () => {
+      if (!folderTitle.textContent.trim()) {
+        folderTitle.textContent = '새 폴더';
+      }
+
+      const target = getFolderById(folder.id);
+
+      if (target) {
+        target.name = folderTitle.textContent.trim();
+      }
+
+      saveData();
+    });
+
+    /*
+      폴더 선택
+    */
+
+    folderItem.addEventListener('click', e => {
+      e.stopPropagation();
+
+      selectFolder(folder.id);
+    });
+
+    /*
+      펼치기 / 접기
+    */
+
+    const arrowIcon =
+      folderItem.querySelector('.arrow-icon');
+
+    arrowIcon.addEventListener('click', e => {
+      e.stopPropagation();
+
+      const target = getFolderById(folder.id);
+
+      if (!target) {
+        return;
+      }
+
+      target.collapsed = !target.collapsed;
+
+      saveData();
+
+      render();
+    });
+
+    /*
+      하위 노트
+    */
+
+    const childNotes = appData.notes
+      .filter(note => note.folderId === folder.id)
+      .filter(note => currentCategory === 'trash'
+        ? note.deleted
+        : !note.deleted
+      );
+
+    childNotes
+      .sort((a, b) => b.updatedAt - a.updatedAt)
+      .forEach(note => {
+        childrenContainer.appendChild(
+          createNoteCard(note)
+        );
+      });
+
+    const count =
+      appData.notes.filter(note =>
+        note.folderId === folder.id &&
+        !note.deleted
+      ).length;
+
+    folderItem.querySelector(
+      '.folder-count-badge'
+    ).textContent = count;
+
+    return wrapper;
+  }
+
+  /* =========================================================
+     Render
+     ========================================================= */
+
+  function render() {
+    noteList.innerHTML = '';
+
+    const query =
+      searchInput.value.toLowerCase().trim();
+
+    /*
+      FOLDERS
+    */
+
+    if (currentCategory === 'folders') {
+      foldersHeader.style.display = 'block';
+
+      newFolderBtn.classList.remove('hidden');
+
+      trashActionArea.style.display = 'none';
+
+      searchInput.placeholder = 'Folders Search...';
+
+      const folders = appData.folders
+        .filter(folder => !folder.deleted)
+        .filter(folder =>
+          folder.name
+            .toLowerCase()
+            .includes(query)
+        );
+
+      folders.forEach(folder => {
+        noteList.appendChild(
+          createFolderElement(folder)
+        );
+      });
+
+      return;
+    }
+
+    /*
+      TRASH
+    */
+
+    if (currentCategory === 'trash') {
+      foldersHeader.style.display = 'none';
+
+      newFolderBtn.classList.add('hidden');
+
+      trashActionArea.style.display = 'flex';
+
+      searchInput.placeholder = 'Trash Search...';
+
+      /*
+        휴지통 폴더
+      */
+
+      const trashFolders = appData.folders
+        .filter(folder => folder.deleted)
+        .filter(folder =>
+          folder.name
+            .toLowerCase()
+            .includes(query)
+        );
+
+      trashFolders.forEach(folder => {
+        noteList.appendChild(
+          createFolderElement(folder)
+        );
+      });
+
+      /*
+        휴지통에 있는 일반 노트
+      */
+
+      const trashNotes = appData.notes
+        .filter(note => note.deleted)
+        .filter(note => !note.folderId)
+        .filter(note => {
+          const text =
+            `${note.title} ${stripHtml(note.content)}`.toLowerCase();
+
+          return text.includes(query);
+        })
+        .sort((a, b) => b.updatedAt - a.updatedAt);
+
+      trashNotes.forEach(note => {
+        noteList.appendChild(
+          createNoteCard(note)
+        );
+      });
+
+      return;
+    }
+
+    /*
+      ALL / QUICK
+    */
+
+    foldersHeader.style.display = 'none';
+
+    newFolderBtn.classList.add('hidden');
+
+    trashActionArea.style.display = 'none';
+
+    searchInput.placeholder = 'Notes Search...';
+
+    let notes = appData.notes
+      .filter(note => !note.deleted);
+
+    if (currentCategory === 'quick') {
+      notes = notes.filter(note =>
+        note.category === 'quick'
+      );
+    }
+
+    /*
+      폴더 내부 노트는
+      All Notes에서 중복으로 표시하지 않고
+      폴더 밖 노트만 표시
+    */
+
+    notes = notes.filter(note => !note.folderId);
+
+    notes = notes.filter(note => {
+      const text =
+        `${note.title} ${stripHtml(note.content)}`.toLowerCase();
+
+      return text.includes(query);
+    });
+
+    notes
+      .sort((a, b) => b.updatedAt - a.updatedAt)
+      .forEach(note => {
+        noteList.appendChild(
+          createNoteCard(note)
+        );
+      });
+  }
+
+  /* =========================================================
+     Note 선택
+     ========================================================= */
+
+  function selectNote(id) {
+    const note = getNoteById(id);
+
+    if (!note) {
+      return;
+    }
+
+    activeFolderId = null;
+
+    activeNoteId = id;
+
+    document
+      .querySelectorAll('.folder-item')
+      .forEach(item =>
+        item.classList.remove('selected')
+      );
+
+    loadNoteIntoEditor(note);
+
+    render();
+  }
+
+  /* =========================================================
+     Folder 선택
+     ========================================================= */
+
+  function selectFolder(id) {
+    if (activeFolderId === id) {
+      activeFolderId = null;
+
+      clearEditor();
+
+      render();
+
+      return;
+    }
+
+    activeFolderId = id;
+
+    activeNoteId = null;
+
+    clearEditor();
+
+    document
+      .querySelectorAll('.frame_20')
+      .forEach(card =>
+        card.classList.remove('selected')
+      );
+
+    render();
+  }
+
+  /* =========================================================
+     새 노트
+     ========================================================= */
+
+  function createNewNote() {
+    if (currentCategory === 'trash') {
+      alert('휴지통에서는 새 메모를 생성할 수 없습니다.');
+      return;
+    }
+
+    /*
+      Folders 페이지에서
+      폴더를 선택하지 않았다면 생성하지 않음
+    */
+
+    if (
+      currentCategory === 'folders' &&
+      !activeFolderId
+    ) {
+      alert('노트를 생성할 폴더를 먼저 선택해주세요.');
+      return;
+    }
+
+    const now = Date.now();
+
+    const note = {
+      id: generateId('note'),
+
+      title: '',
+
+      content: '',
+
+      folderId:
+        currentCategory === 'folders'
+          ? activeFolderId
+          : null,
+
+      category:
+        currentCategory === 'quick'
+          ? 'quick'
+          : 'all',
+
+      deleted: false,
+
+      createdAt: now,
+
+      updatedAt: now
+    };
+
+    appData.notes.push(note);
+
+    saveData();
+
+    activeNoteId = note.id;
+
+    loadNoteIntoEditor(note);
+
+    render();
+  }
+
+  /* =========================================================
+     새 폴더
+     ========================================================= */
+
+  function createFolder() {
+    if (currentCategory === 'trash') {
+      alert('휴지통에서는 폴더를 생성할 수 없습니다.');
+      return;
+    }
+
+    const folder = {
+      id: generateId('folder'),
+
+      name: '새 폴더',
+
+      parentId: null,
+
+      deleted: false,
+
+      collapsed: false
+    };
+
+    appData.folders.push(folder);
+
+    saveData();
+
+    currentCategory = 'folders';
+
+    activeFolderId = folder.id;
+
+    activeNoteId = null;
+
+    updateMenuIcons('folders');
+
+    render();
+
+    /*
+      새 폴더 이름 입력창에 포커스
+    */
+
+    setTimeout(() => {
+      const folderTitle =
+        document.querySelector(
+          `[data-folder-id="${folder.id}"] .folder-title`
+        );
+
+      if (folderTitle) {
+        folderTitle.focus();
+
+        document.execCommand(
+          'selectAll',
+          false,
+          null
+        );
+      }
+    }, 0);
+  }
+
+  /* =========================================================
+     제목 자동 저장
+     ========================================================= */
+
+  inputTitle.addEventListener('input', () => {
+    if (!activeNoteId) {
+      return;
+    }
+
+    const note = getNoteById(activeNoteId);
+
+    if (!note || note.deleted) {
+      return;
+    }
+
+    note.title = inputTitle.value;
+
+    note.updatedAt = Date.now();
+
+    saveData();
+
+    lastModified.textContent =
+      `최종 수정일: ${getFormattedDate(
+        new Date(note.updatedAt)
+      )}`;
+
+    render();
+  });
+
+  /* =========================================================
+     내용 자동 저장
+     ========================================================= */
+
+  inputContent.addEventListener('input', () => {
+    if (!activeNoteId) {
+      return;
+    }
+
+    const note = getNoteById(activeNoteId);
+
+    if (!note || note.deleted) {
+      return;
+    }
+
+    note.content = inputContent.innerHTML;
+
+    note.updatedAt = Date.now();
+
+    saveData();
+
+    lastModified.textContent =
+      `최종 수정일: ${getFormattedDate(
+        new Date(note.updatedAt)
+      )}`;
+
+    render();
+  });
+
+  /* =========================================================
+     검색
+     ========================================================= */
+
+  searchInput.addEventListener('input', () => {
+    render();
+  });
+
+  /* =========================================================
+     메뉴 아이콘
+     ========================================================= */
+
+  function updateMenuIcons(selected) {
+    allNotesImg.src =
+      selected === 'all'
+        ? 'notesIcon/All Notes(on).png'
+        : 'notesIcon/All Notes(off).png';
+
+    quickNotesImg.src =
+      selected === 'quick'
+        ? 'notesIcon/Quick Notes(on).png'
+        : 'notesIcon/Quick Notes(off).png';
+
+    foldersImg.src =
+      selected === 'folders'
+        ? 'notesIcon/Folders(on).png'
+        : 'notesIcon/Folders(off).png';
+
+    if (selected === 'trash') {
+      trashImg.classList.add('icon-blue');
+    } else {
+      trashImg.classList.remove('icon-blue');
+    }
+
+    updateEditorReadOnlyState();
+  }
+
+  /* =========================================================
+     All Notes
+     ========================================================= */
+
+  allNotesBtn.addEventListener('click', () => {
+    currentCategory = 'all';
+
+    activeNoteId = null;
+    activeFolderId = null;
+
+    searchInput.value = '';
+
+    clearEditor();
+
+    updateMenuIcons('all');
+
+    render();
+  });
+
+  /* =========================================================
+     Quick Notes
+     ========================================================= */
+
+  quickNotesBtn.addEventListener('click', () => {
+    currentCategory = 'quick';
+
+    activeNoteId = null;
+    activeFolderId = null;
+
+    searchInput.value = '';
+
+    clearEditor();
+
+    updateMenuIcons('quick');
+
+    render();
+  });
+
+  /* =========================================================
+     Folders
+     ========================================================= */
+
+  foldersBtn.addEventListener('click', () => {
+    currentCategory = 'folders';
+
+    activeNoteId = null;
+    activeFolderId = null;
+
+    searchInput.value = '';
+
+    clearEditor();
+
+    updateMenuIcons('folders');
+
+    render();
+  });
+
+  /* =========================================================
+     Trash
+     ========================================================= */
+
+  trashBtn.addEventListener('click', () => {
+    /*
+      노트가 선택된 경우
+    */
+
+    if (activeNoteId) {
+      const note = getNoteById(activeNoteId);
+
+      if (note && !note.deleted) {
+        note.deleted = true;
+
+        note.updatedAt = Date.now();
+
+        saveData();
+
+        activeNoteId = null;
+
+        clearEditor();
+
+        updateFolderCounts();
+
+        render();
+
+        return;
+      }
+    }
+
+    /*
+      폴더가 선택된 경우
+    */
+
+    if (
+      activeFolderId &&
+      currentCategory === 'folders'
+    ) {
+      const folder =
+        getFolderById(activeFolderId);
+
+      if (folder) {
+        folder.deleted = true;
+
+        /*
+          폴더 안의 노트도 함께 휴지통
+        */
+
+        appData.notes
+          .filter(note =>
+            note.folderId === folder.id
+          )
+          .forEach(note => {
+            note.deleted = true;
+            note.updatedAt = Date.now();
+          });
+
+        saveData();
+
+        activeFolderId = null;
+
+        clearEditor();
+
+        render();
+
+        return;
+      }
+    }
+
+    /*
+      아무것도 선택하지 않았으면
+      휴지통 페이지 이동
+    */
+
+    currentCategory = 'trash';
+
+    activeNoteId = null;
+    activeFolderId = null;
+
+    searchInput.value = '';
+
+    clearEditor();
+
+    updateMenuIcons('trash');
+
+    render();
+  });
+
+  /* =========================================================
+     선택 항목 복원
+     ========================================================= */
+
+  restoreNoteBtn.addEventListener('click', () => {
+    /*
+      노트 복원
+    */
+
+    if (activeNoteId) {
+      const note = getNoteById(activeNoteId);
+
+      if (note && note.deleted) {
+        note.deleted = false;
+
+        note.category = 'all';
+
+        note.updatedAt = Date.now();
+
+        saveData();
+
+        activeNoteId = null;
+
+        clearEditor();
+
+        render();
+
+        return;
+      }
+    }
+
+    /*
+      폴더 복원
+    */
+
+    if (activeFolderId) {
+      const folder =
+        getFolderById(activeFolderId);
+
+      if (folder && folder.deleted) {
+        folder.deleted = false;
+
+        appData.notes
+          .filter(note =>
+            note.folderId === folder.id
+          )
+          .forEach(note => {
+            note.deleted = false;
+            note.updatedAt = Date.now();
+          });
+
+        saveData();
+
+        activeFolderId = null;
+
+        clearEditor();
+
+        render();
+
+        return;
+      }
+    }
+
+    alert('복원할 항목을 선택해주세요.');
+  });
+
+  /* =========================================================
+     휴지통 비우기
+     ========================================================= */
+
+  emptyTrashBtn.addEventListener('click', () => {
+    const trashNotes =
+      appData.notes.filter(note => note.deleted);
+
+    const trashFolders =
+      appData.folders.filter(folder => folder.deleted);
+
+    if (
+      trashNotes.length === 0 &&
+      trashFolders.length === 0
+    ) {
+      alert('휴지통이 비어있습니다.');
+      return;
+    }
+
+    const confirmed = confirm(
+      '휴지통에 있는 모든 항목을 영구 삭제하시겠습니까?\n복원할 수 없습니다.'
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    /*
+      휴지통 노트 영구 삭제
+    */
+
+    appData.notes =
+      appData.notes.filter(note => !note.deleted);
+
+    /*
+      휴지통 폴더 영구 삭제
+    */
+
+    const deletedFolderIds =
+      new Set(
+        trashFolders.map(folder => folder.id)
+      );
+
+    appData.folders =
+      appData.folders.filter(
+        folder => !folder.deleted
+      );
+
+    /*
+      혹시 삭제된 폴더에 남아 있던
+      노트도 제거
+    */
+
+    appData.notes =
+      appData.notes.filter(note =>
+        !deletedFolderIds.has(note.folderId)
+      );
+
+    saveData();
+
+    activeNoteId = null;
+    activeFolderId = null;
+
+    clearEditor();
+
+    render();
+  });
+
+  /* =========================================================
+     서식
+     ========================================================= */
+
+  function executeCommand(
+    e,
+    command,
+    value = null
+  ) {
+    if (e) {
+      e.preventDefault();
+    }
+
+    if (
+      !activeNoteId ||
+      currentCategory === 'trash'
+    ) {
+      return;
+    }
+
+    inputContent.focus();
+
+    document.execCommand(
+      command,
+      false,
+      value
+    );
+
+    inputContent.dispatchEvent(
+      new Event('input', {
+        bubbles: true
+      })
+    );
+  }
+
+  if (btnBold) {
+    btnBold.addEventListener(
+      'mousedown',
+      e => executeCommand(e, 'bold')
+    );
+  }
+
+  if (btnItalic) {
+    btnItalic.addEventListener(
+      'mousedown',
+      e => executeCommand(e, 'italic')
+    );
+  }
+
+  if (btnUnderline) {
+    btnUnderline.addEventListener(
+      'mousedown',
+      e => executeCommand(e, 'underline')
+    );
+  }
+
+  if (btnStrike) {
+    btnStrike.addEventListener(
+      'mousedown',
+      e => executeCommand(
+        e,
+        'strikeThrough'
+      )
+    );
+  }
+
+  if (btnList) {
+    btnList.addEventListener(
+      'mousedown',
+      e => executeCommand(
+        e,
+        'insertUnorderedList'
+      )
+    );
+  }
+
+  if (btnHeading) {
+    btnHeading.addEventListener(
+      'mousedown',
+      e => executeCommand(
+        e,
+        'formatBlock',
+        '<h3>'
+      )
+    );
+  }
+
+  /* =========================================================
+     링크
+     ========================================================= */
+
+  function normalizeUrl(url) {
+    if (!url) {
+      return '';
+    }
+
+    const trimmed = url.trim();
+
+    if (
+      /^(https?:\/\/|file:\/\/|data:|\/|\.\/)/i
+        .test(trimmed)
+    ) {
+      return trimmed;
+    }
+
+    return 'https://' + trimmed;
+  }
+
+  if (btnLink) {
+    btnLink.addEventListener('mousedown', e => {
+      e.preventDefault();
+
+      if (!activeNoteId) {
+        return;
+      }
+
+      const inputUrl = prompt(
+        '연결할 링크 URL을 입력하세요:'
+      );
+
+      if (
+        !inputUrl ||
+        !inputUrl.trim()
+      ) {
+        return;
+      }
+
+      const finalUrl =
+        normalizeUrl(inputUrl);
+
+      const selection =
+        window.getSelection();
+
+      if (selection.isCollapsed) {
+        executeCommand(
+          null,
+          'insertHTML',
+          `<a href="${finalUrl}" target="_blank" rel="noopener noreferrer">${finalUrl}</a>`
+        );
+      } else {
+        executeCommand(
+          null,
+          'createLink',
+          finalUrl
+        );
+
+        /*
+          선택된 링크에 target 추가
+        */
+
+        const anchors =
+          inputContent.querySelectorAll('a');
+
+        anchors.forEach(anchor => {
+          if (
+            anchor.href === finalUrl ||
+            anchor.href === finalUrl + '/'
+          ) {
+            anchor.target = '_blank';
+            anchor.rel =
+              'noopener noreferrer';
+          }
+        });
+
+        inputContent.dispatchEvent(
+          new Event('input', {
+            bubbles: true
+          })
+        );
+      }
+    });
+  }
+
+  /* =========================================================
+     링크 클릭
+     ========================================================= */
+
+  inputContent.addEventListener(
+    'click',
+    e => {
+      const link =
+        e.target.closest('a');
+
+      if (
+        link &&
+        link.href
+      ) {
+        e.preventDefault();
+
+        window.open(
+          link.href,
+          '_blank',
+          'noopener,noreferrer'
+        );
+      }
+    }
+  );
+
+  /* =========================================================
+     새 노트 / 새 폴더 버튼
+     ========================================================= */
+
+  newNoteBtn.addEventListener(
+    'click',
+    createNewNote
+  );
+
+  newFolderBtn.addEventListener(
+    'click',
+    createFolder
+  );
+
+  /* =========================================================
+     폴더 개수 업데이트
+     ========================================================= */
+
+  function updateFolderCounts() {
+    document
+      .querySelectorAll('.folder-wrapper')
+      .forEach(wrapper => {
+        const folderId =
+          wrapper.dataset.folderId;
+
+        const badge =
+          wrapper.querySelector(
+            '.folder-count-badge'
+          );
+
+        if (!badge) {
+          return;
+        }
+
+        const count =
+          appData.notes.filter(note =>
+            note.folderId === folderId &&
+            !note.deleted
+          ).length;
+
+        badge.textContent = count;
+      });
+  }
+
+  /* =========================================================
+     브라우저 새로고침 전 저장
+  ========================================================= */
+
+  window.addEventListener(
+    'beforeunload',
+    saveData
+  );
+
+  /* =========================================================
+     초기 실행
+  ========================================================= */
+
+  updateMenuIcons('all');
+
+  clearEditor();
+
+  render();
+
+  /*
+    10초마다 "몇 분 전" 표시 갱신
+  */
+
+  setInterval(() => {
+    document
+      .querySelectorAll('.card-time')
+      .forEach(timeSpan => {
+        const timestamp =
+          timeSpan.dataset.updatedAt;
+
+        if (timestamp) {
+          timeSpan.textContent =
+            getElapsedTimeStr(timestamp);
+        }
+      });
+  }, 10000);
+</script>
+</body>
+</html>
