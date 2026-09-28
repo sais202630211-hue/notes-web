@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>노트 웹</title>
+  <link rel="stylesheet" href="all notes UI.css">
+</head>
+<body>
+  <div class='frame_0_l frame_0'>
+    <div class='frame_1_l frame_1'>
+      <!-- 앱 타이틀 영역 -->
+      <div class='frame_2_l frame_2'>
+        <div class='frame_3_l frame_3'>
+          <img src='메모장 아이콘/Icon.png' class='frame_4_l' />
+          <span class='text_0_l text_0'>Notes</span>
+        </div>
+      </div>
+
+      <!-- 상단 액션 버튼 영역 -->
+      <div class="action-btn-container">
+        <button id="newNoteBtn" type="button" class="primary-blue-btn">
+          <span>+ New Note</span>
+        </button>
+        <button id="newFolderBtn" type="button" class="primary-blue-btn hidden">
+          <span>+ New Folder</span>
+        </button>
+      </div>
+
+      <!-- 메뉴 버튼 영역 -->
+      <div class='frame_7_l frame_7' style="gap: 4px;">
+        <button type="button" class='menu-btn' id="allNotesBtn">
+          <img src='메모장 아이콘/All Notes(on).png' id="allNotesImg" />
+          <span>All Notes</span>
+        </button>
+
+        <button type="button" class='menu-btn' id="quickNotesBtn">
+          <img src='메모장 아이콘/Quick Notes(off).png' id="quickNotesImg" />
+          <span>Quick Notes</span>
+        </button>
+
+        <button type="button" class='menu-btn' id="foldersBtn">
+          <img src='메모장 아이콘/Folders(off).png' id="foldersImg" />
+          <span>Folders</span>
+        </button>
+
+        <button type="button" class='menu-btn' id="trashBtn">
+          <img src='메모장 아이콘/trash.png' id="trashImg" />
+          <span>Trash</span>
+        </button>
+      </div>
+    </div>
+
+    <div class='frame_16_l frame_16'>
+      <div class='frame_17_l frame_17'>
+        <img src='도구 이미지/search.png' class='frame_18_l' />
+        <input type="text" id="searchInput" class='text_6_l text_6' placeholder="Notes Search..." />
+      </div>
+      
+      <!-- Folders 페이지 헤더 및 컨테이너 -->
+      <div id="foldersHeader" class="folder-header-title" style="display: none;">All Folders</div>
+      <div class='frame_19_l frame_19' id="noteList" style="flex: 1; overflow-y: auto;">
+        <!-- 노트 목록 및 폴더 트리가 들어가는 영역 -->
+      </div>
+
+      <!-- Trash 전용 하단 액션 버튼 영역 -->
+      <div id="trashActionArea" class="trash-action-area" style="display: none;">
+        <button type="button" class="trash-btn-action" id="restoreNoteBtn">선택 노트 복원</button>
+        <button type="button" class="trash-btn-action btn-empty-trash" id="emptyTrashBtn">휴지통 비우기</button>
+      </div>
+    </div>
+
+    <!-- 오른쪽 메모 작성 영역 -->
+    <div class='frame_21_l frame_21 empty-state' id="editorArea">
+      <div class='frame_22_l frame_22'>
+        <input type="text" class='text_10_l text_10' id="inputTitle" placeholder="제목을 입력하세요" />
+        <span class='text_11_l text_11' id="lastModified">최종 수정일: 방금 전</span>
+      </div>
+      <div class='frame_23_l frame_23'>
+        <div class='frame_24_l frame_24' id='btnBold' style='cursor:pointer;'><span class='tool'>B</span></div>
+        <div class='frame_25_l frame_25' id='btnItalic' style='cursor:pointer;'><span class='tool'>I</span></div>
+        <div class='frame_26_l frame_26' id='btnUnderline' style='cursor:pointer;'><span class='tool'>U</span></div>
+        <img src='도구 이미지/strikethrough.png' class='frame_27_l' id='btnStrike' style='cursor:pointer;' />
+        <img src='도구 이미지/list.png' class='frame_28_l' id='btnList' style='cursor:pointer;' />
+        <img src='도구 이미지/hash.png' class='frame_29_l' id='btnHeading' style='cursor:pointer;' />
+        <img src='도구 이미지/link.png' class='frame_31_l' id='btnLink' style='cursor:pointer;' />
+      </div>
+      <div class='frame_32_l frame_32'>
+        <div class='frame_32_l frame_32'>
+          <div id="inputContent" contenteditable="true" spellcheck="false" placeholder="내용을 입력하세요..."></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  const newNoteBtn = document.getElementById('newNoteBtn');
+  const newFolderBtn = document.getElementById('newFolderBtn');
+  const allNotesBtn = document.getElementById('allNotesBtn');
+  const quickNotesBtn = document.getElementById('quickNotesBtn');
+  const foldersBtn = document.getElementById('foldersBtn');
+  const trashBtn = document.getElementById('trashBtn');
+
+  const allNotesImg = document.getElementById('allNotesImg');
+  const quickNotesImg = document.getElementById('quickNotesImg');
+  const foldersImg = document.getElementById('foldersImg');
+  const trashImg = document.getElementById('trashImg');
+
+  const noteList = document.getElementById('noteList');
+  const foldersHeader = document.getElementById('foldersHeader');
+  const trashActionArea = document.getElementById('trashActionArea');
+  const restoreNoteBtn = document.getElementById('restoreNoteBtn');
+  const emptyTrashBtn = document.getElementById('emptyTrashBtn');
+
+  const editorArea = document.getElementById('editorArea');
+  const inputTitle = document.getElementById('inputTitle');
+  const inputContent = document.getElementById('inputContent');
+  const searchInput = document.getElementById('searchInput');
+  const lastModified = document.getElementById('lastModified');
+
+  const btnBold = document.getElementById('btnBold');
+  const btnItalic = document.getElementById('btnItalic');
+  const btnUnderline = document.getElementById('btnUnderline');
+  const btnStrike = document.getElementById('btnStrike');
+  const btnList = document.getElementById('btnList');
+  const btnHeading = document.getElementById('btnHeading');
+  const btnLink = document.getElementById('btnLink');
+
+  /* 드래그 및 포커스 유지 서식 실행 함수 */
+  function executeCommand(e, command, value = null) {
+    // 버튼 클릭 시 에디터 포커스가 풀리지 않도록 기본 동작 방지
+    if (e) e.preventDefault();
+
+    if (!inputContent || currentCategory === 'trash') return;
+
+    // 에디터로 다시 포커스 맞추기
+    inputContent.focus();
+
+    // 선택 영역(Selection)이 유지된 상태로 명령어 실행
+    document.execCommand(command, false, value);
+
+    // 변경사항 저장 트리거 (노트 카드 미리보기 및 수정시간 갱신)
+    inputContent.dispatchEvent(new Event('input'));
+  }
+
+  /* 각 도구 버튼별 클릭 이벤트 (e.preventDefault를 적용하기 위해 e 전달) */
+
+  // 1. Bold (굵게)
+  if (btnBold) {
+    btnBold.addEventListener('mousedown', (e) => executeCommand(e, 'bold'));
+  }
+
+  // 2. Italic (기울임)
+  if (btnItalic) {
+    btnItalic.addEventListener('mousedown', (e) => executeCommand(e, 'italic'));
+  }
+
+  // 3. Underline (밑줄)
+  if (btnUnderline) {
+    btnUnderline.addEventListener('mousedown', (e) => executeCommand(e, 'underline'));
+  }
+
+  // 4. Strikethrough (취소선)
+  if (btnStrike) {
+    btnStrike.addEventListener('mousedown', (e) => executeCommand(e, 'strikeThrough'));
+  }
+
+  // 5. List (글머리 기호)
+  if (btnList) {
+    btnList.addEventListener('mousedown', (e) => executeCommand(e, 'insertUnorderedList'));
+  }
+
+  // 6. Heading (제목 크기)
+  if (btnHeading) {
+    btnHeading.addEventListener('mousedown', (e) => executeCommand(e, 'formatBlock', '<h3>'));
+  }
+
+  // 7. Link (웹 링크 삽입)
+  if (btnLink) {
+    btnLink.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      const inputUrl = prompt('연결할 링크 URL을 입력하세요:');
+      if (inputUrl && inputUrl.trim() !== '') {
+        const finalUrl = normalizeUrl(inputUrl);
+        
+        // 현재 선택 구역이 없을 경우 텍스트 자동 생성
+        const selection = window.getSelection();
+        if (selection.isCollapsed) {
+          executeCommand(null, 'insertHTML', `<a href="${finalUrl}" target="_blank" rel="noopener noreferrer">${finalUrl}</a>`);
+        } else {
+          executeCommand(null, 'createLink', finalUrl);
+          // 생성된 a 태그에 target="_blank" 부여
+          const anchor = selection.anchorNode.parentElement.closest('a');
+          if (anchor) {
+            anchor.target = '_blank';
+            anchor.rel = 'noopener noreferrer';
+          }
+        }
+      }
+    });
+  }
+
+  if (inputContent) {
+    inputContent.addEventListener('click', (e) => {
+      const link = e.target.closest('a');
+      if (link && link.href) {
+        e.preventDefault(); // 편집 동작 방지
+        window.open(link.href, '_blank'); // 왼쪽 클릭 시 즉시 새 탭 오픈
+      }
+    });
+  }
+
+  function normalizeUrl(url) {
+    if (!url) return '';
+    const trimmed = url.trim();
+    if (/^(https?:\/\/|file:\/\/|data:|\/|\.\/)/i.test(trimmed)) {
+      return trimmed;
+    }
+    return 'https://' + trimmed;
+  }
+
+  let activeNote = null;
+  let activeFolder = null;
+  let currentCategory = 'all';
+
+  function getFormattedDate(dateObj) {
+    const year = dateObj.getFullYear();
+    const month = dateObj.getMonth() + 1;
+    const date = dateObj.getDate();
+    
+    let hours = dateObj.getHours();
+    const minutes = String(dateObj.getMinutes()).padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    
+    hours = hours % 12;
+    hours = hours ? hours : 12;
+    const formattedHours = String(hours).padStart(2, '0');
+
+    return `${year}년 ${month}월 ${date}일 ${ampm} ${formattedHours}:${minutes}`;
+  }
+
+  function getElapsedTimeStr(updatedTimestamp) {
+    if (!updatedTimestamp) return '방금 전';
+    
+    const now = Date.now();
+    const diffInSeconds = Math.floor((now - Number(updatedTimestamp)) / 1000);
+
+    if (diffInSeconds < 60) return '방금 전';
+    
+    const diffInMinutes = Math.floor(diffInSeconds / 60);
+    if (diffInMinutes < 60) return `${diffInMinutes}분 전`;
+
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    if (diffInHours < 24) return `${diffInHours}시간 전`;
+
+    const diffInDays = Math.floor(diffInHours / 24);
+    if (diffInDays < 30) return `${diffInDays}일 전`;
+
+    const diffInMonths = Math.floor(diffInDays / 30);
+    if (diffInMonths < 12) return `${diffInMonths}달 전`;
+
+    const diffInYears = Math.floor(diffInDays / 365);
+    return `${diffInYears}년 전`;
+  }
+
+  function refreshAllNoteTimes() {
+    const noteCards = noteList.querySelectorAll('.frame_20');
+    noteCards.forEach(card => {
+      const timeSpan = card.querySelector('.card-time');
+      if (timeSpan && timeSpan.dataset.updatedAt) {
+        timeSpan.textContent = getElapsedTimeStr(timeSpan.dataset.updatedAt);
+      }
+    });
+  }
+
+  function updateTimestamp() {
+    if (!activeNote) return;
+    const nowObj = new Date();
+    const nowTimestamp = nowObj.getTime();
+    
+    if (lastModified) {
+      lastModified.textContent = `최종 수정일: ${getFormattedDate(nowObj)}`;
+    }
+
+    const timeSpan = activeNote.querySelector('.card-time');
+    if (timeSpan) {
+      timeSpan.dataset.updatedAt = nowTimestamp;
+    }
+
+    refreshAllNoteTimes();
+  }
+
+  /* 에디터 읽기 전용 상태 업데이트 */
+  function updateEditorReadOnlyState() {
+    const isTrash = (currentCategory === 'trash') || (activeNote && activeNote.dataset.category === 'trash');
+    if (isTrash) {
+      inputTitle.setAttribute('readonly', 'true');
+      inputContent.setAttribute('readonly', 'true');
+    } else {
+      inputTitle.removeAttribute('readonly');
+      inputContent.removeAttribute('readonly');
+    }
+  }
+
+  /* 폴더 생성 함수 */
+  function createFolder() {
+    if (currentCategory === 'trash') {
+      alert("휴지통에서는 폴더를 생성할 수 없습니다.");
+      return;
+    }
+
+    const folderWrapper = document.createElement('div');
+    folderWrapper.className = 'folder-wrapper';
+
+    const folderItem = document.createElement('div');
+    folderItem.className = 'folder-item';
+
+    folderItem.innerHTML = `
+      <div class="folder-left">
+        <span class="arrow-icon">▼</span>
+        <span class="folder-icon">📁</span>
+        <span class="folder-title" contenteditable="true" spellcheck="false">새 폴더</span>
+      </div>
+      <span class="folder-count-badge">0</span>
+    `;
+
+    const childrenContainer = document.createElement('div');
+    childrenContainer.className = 'folder-children';
+
+    folderWrapper.appendChild(folderItem);
+    folderWrapper.appendChild(childrenContainer);
+
+    if (activeFolder) {
+      const targetChildren = activeFolder.nextElementSibling;
+      if (targetChildren && targetChildren.classList.contains('folder-children')) {
+        targetChildren.appendChild(folderWrapper);
+        targetChildren.classList.remove('collapsed');
+        const arrow = activeFolder.querySelector('.arrow-icon');
+        if (arrow) arrow.textContent = '▼';
+      }
+    } else {
+      noteList.appendChild(folderWrapper);
+    }
+
+    const arrowIcon = folderItem.querySelector('.arrow-icon');
+    const folderTitle = folderItem.querySelector('.folder-title');
+
+    arrowIcon.addEventListener('click', (e) => {
+      e.stopPropagation();
+      childrenContainer.classList.toggle('collapsed');
+      arrowIcon.textContent = childrenContainer.classList.contains('collapsed') ? '▶' : '▼';
+    });
+
+    folderTitle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      selectFolder(folderItem);
+    });
+
+    folderTitle.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        folderTitle.blur();
+      }
+    });
+
+    folderTitle.addEventListener('blur', () => {
+      if (folderTitle.textContent.trim() === '') {
+        folderTitle.textContent = '새 폴더';
+      }
+    });
+
+    folderItem.addEventListener('click', (e) => {
+      e.stopPropagation();
+      selectFolder(folderItem);
+    });
+
+    if (currentCategory !== 'folders') {
+      currentCategory = 'folders';
+      updateMenuIcons('folders');
+    }
+
+    updateFolderCounts();
+    selectFolder(folderItem);
+    filterNotes(searchInput ? searchInput.value : '');
+  }
+
+  function selectFolder(folderItem) {
+    if (activeFolder === folderItem) {
+      deselectFolder();
+      return;
+    }
+
+    deselectFolder();
+    deselectNote();
+
+    activeFolder = folderItem;
+    if (activeFolder) {
+      editorArea.classList.add('empty-state');
+      activeFolder.classList.add('selected');
+    }
+  }
+
+  function deselectFolder() {
+    document.querySelectorAll('.folder-item').forEach(item => item.classList.remove('selected'));
+    activeFolder = null;
+    if (!activeNote) {
+      editorArea.classList.add('empty-state');
+    }
+  }
+
+  function updateFolderCounts() {
+    const wrappers = document.querySelectorAll('.folder-wrapper');
+    wrappers.forEach(wrapper => {
+      const childrenContainer = wrapper.querySelector('.folder-children');
+      const badge = wrapper.querySelector('.folder-count-badge');
+      if (childrenContainer && badge) {
+        const noteCount = childrenContainer.querySelectorAll('.frame_20:not([data-category="trash"])').length;
+        badge.textContent = noteCount;
+      }
+    });
+  }
+
+  /* 새 노트 생성 함수 */
+  function createNewNote() {
+    if (currentCategory === 'trash') {
+      alert("휴지통에서는 새 메모를 생성할 수 없습니다.");
+      return;
+    }
+
+    if (currentCategory === 'folders' && !activeFolder) {
+      alert("노트를 생성할 폴더를 먼저 선택해주세요.");
+      return;
+    }
+
+    const targetCategory = currentCategory;
+
+    const noteCard = document.createElement('div');
+    noteCard.className = 'frame_20_l frame_20';
+    noteCard.style.cursor = 'pointer';
+    noteCard.dataset.category = targetCategory;
+
+    const nowTimestamp = Date.now();
+
+    noteCard.innerHTML = `
+      <span class='text_7_l text_7 card-title'>제목 없음</span>
+      <span class='text_8_l card-content'>내용 없음</span>
+      <span class='text_8_l card-time' data-updated-at="${nowTimestamp}">방금 전</span>
+    `;
+
+    if (activeFolder) {
+      const childrenContainer = activeFolder.nextElementSibling;
+      if (childrenContainer && childrenContainer.classList.contains('folder-children')) {
+        childrenContainer.prepend(noteCard);
+        childrenContainer.classList.remove('collapsed');
+        const arrow = activeFolder.querySelector('.arrow-icon');
+        if (arrow) arrow.textContent = '▼';
+      }
+    } else {
+      noteList.prepend(noteCard);
+    }
+
+    noteCard.addEventListener('click', (e) => {
+      e.stopPropagation();
+      selectNote(noteCard);
+    });
+
+    updateFolderCounts();
+    selectNote(noteCard);
+    filterNotes(searchInput ? searchInput.value : '');
+  }
+
+  function selectNote(noteCard) {
+    if (activeNote === noteCard) {
+      deselectNote();
+      return;
+    }
+
+    deselectFolder();
+    deselectNote();
+
+    activeNote = noteCard;
+    if (activeNote) {
+      editorArea.classList.remove('empty-state');
+      activeNote.classList.add('selected');
+      
+      const titleSpan = noteCard.querySelector('.card-title');
+      const contentSpan = noteCard.querySelector('.card-content');
+      const timeSpan = noteCard.querySelector('.card-time');
+
+      const fullTitle = titleSpan.dataset.fullTitle ?? (titleSpan.textContent.replace(' ◀', '') === '제목 없음' ? '' : titleSpan.textContent.replace(' ◀', ''));
+      const fullContent = contentSpan.dataset.fullContent ?? '';
+      const timestamp = Number(timeSpan.dataset.updatedAt);
+
+      renderNoteTitle(titleSpan, fullTitle, true);
+
+      inputTitle.value = fullTitle;
+      inputContent.value = fullContent;
+      
+      if (lastModified && timestamp) {
+        lastModified.textContent = `최종 수정일: ${getFormattedDate(new Date(timestamp))}`;
+      }
+
+      updateEditorReadOnlyState();
+    }
+  }
+
+  function deselectNote() {
+    if (activeNote) {
+      const titleSpan = activeNote.querySelector('.card-title');
+      const fullTitle = titleSpan.dataset.fullTitle ?? '';
+      renderNoteTitle(titleSpan, fullTitle, false);
+    }
+
+    document.querySelectorAll('.frame_20').forEach(card => card.classList.remove('selected'));
+    activeNote = null;
+    if (!activeFolder) {
+      editorArea.classList.add('empty-state');
+    }
+    inputTitle.value = '';
+    inputContent.value = '';
+    if (lastModified) lastModified.textContent = '최종 수정일: 없음';
+    updateEditorReadOnlyState();
+  }
+
+  function renderNoteTitle(titleSpan, rawTitle, isSelected) {
+    let displayTitle = rawTitle.trim();
+    if (displayTitle === '') {
+      displayTitle = '제목 없음';
+    } else if (displayTitle.length > 20) {
+      displayTitle = displayTitle.slice(0, 20) + '...';
+    }
+
+    if (isSelected) {
+      titleSpan.textContent = `${displayTitle} ◀`;
+    } else {
+      titleSpan.textContent = displayTitle;
+    }
+  }
+
+  noteList.addEventListener('click', (e) => {
+    if (e.target === noteList) {
+      deselectNote();
+      deselectFolder();
+    }
+  });
+
+  inputTitle.addEventListener('input', (e) => {
+    if (!activeNote || currentCategory === 'trash') return;
+    const value = e.target.value.trim();
+    const titleSpan = activeNote.querySelector('.card-title');
+    
+    titleSpan.dataset.fullTitle = value;
+    renderNoteTitle(titleSpan, value, true);
+
+    updateTimestamp();
+    filterNotes(searchInput ? searchInput.value : '');
+  });
+
+  inputContent.addEventListener('input', (e) => {
+    if (!activeNote || currentCategory === 'trash') return;
+    const value = e.target.value;
+    const contentSpan = activeNote.querySelector('.card-content');
+    
+    contentSpan.dataset.fullContent = value;
+
+    if (value.trim() === '') {
+      contentSpan.textContent = '내용 없음';
+    } else if (value.length > 20) {
+      contentSpan.textContent = value.slice(0, 20) + '...';
+    } else {
+      contentSpan.textContent = value;
+    }
+
+    updateTimestamp();
+  });
+
+  function filterNotes(keyword = '') {
+    const query = keyword.toLowerCase().trim();
+    const noteCards = noteList.querySelectorAll('.frame_20');
+    const folderWrappers = noteList.querySelectorAll('.folder-wrapper');
+
+    // 'folders' 카테고리인 경우
+    if (currentCategory === 'folders') {
+      if (newFolderBtn) newFolderBtn.classList.remove('hidden');
+      foldersHeader.style.display = 'block';
+      trashActionArea.style.display = 'none';
+      if (searchInput) searchInput.placeholder = 'Folders Search...';
+
+      folderWrappers.forEach(wrapper => {
+        if (wrapper.dataset.folderTrash === 'true') {
+          wrapper.style.display = 'none';
+        } else {
+          wrapper.style.display = 'block';
+          const folderItem = wrapper.querySelector('.folder-item');
+          if (folderItem) folderItem.style.display = 'flex';
+        }
+      });
+      
+      noteCards.forEach(card => {
+        const isTrash = card.dataset.category === 'trash';
+        if (!isTrash && card.parentElement.classList.contains('folder-children')) {
+          card.style.display = 'flex';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+      return;
+    }
+
+    if (newFolderBtn) newFolderBtn.classList.add('hidden');
+    foldersHeader.style.display = 'none';
+
+    // 'trash' 카테고리인 경우
+    if (currentCategory === 'trash') {
+      trashActionArea.style.display = 'flex';
+      if (searchInput) searchInput.placeholder = 'Trash Search...';
+
+      folderWrappers.forEach(wrapper => {
+        if (wrapper.dataset.folderTrash === 'true') {
+          wrapper.style.display = 'block';
+          const folderItem = wrapper.querySelector('.folder-item');
+          if (folderItem) folderItem.style.display = 'flex';
+        } else {
+          wrapper.style.display = 'contents';
+          const folderItem = wrapper.querySelector('.folder-item');
+          if (folderItem) folderItem.style.display = 'none';
+        }
+      });
+    } else {
+      trashActionArea.style.display = 'none';
+      if (searchInput) searchInput.placeholder = 'Notes Search...';
+
+      folderWrappers.forEach(wrapper => {
+        wrapper.style.display = 'none';
+      });
+    }
+
+    // 메모 카드 필터링
+    noteCards.forEach(card => {
+      const titleSpan = card.querySelector('.card-title');
+      const fullTitle = (titleSpan.dataset.fullTitle ?? titleSpan.textContent).toLowerCase();
+      const noteCategory = card.dataset.category || 'all';
+
+      let matchesCategory = false;
+      if (currentCategory === 'all') {
+        matchesCategory = noteCategory !== 'trash';
+      } else {
+        matchesCategory = noteCategory === currentCategory;
+      }
+
+      const matchesQuery = fullTitle.includes(query) || query === '';
+
+      if (matchesCategory && matchesQuery) {
+        card.style.display = 'flex';
+      } else {
+        card.style.display = 'none';
+      }
+    });
+  }
+
+  function updateMenuIcons(selected) {
+    if (allNotesImg) allNotesImg.src = selected === 'all' ? '메모장 아이콘/All Notes(on).png' : '메모장 아이콘/All Notes(off).png';
+    if (quickNotesImg) quickNotesImg.src = selected === 'quick' ? '메모장 아이콘/Quick Notes(on).png' : '메모장 아이콘/Quick Notes(off).png';
+    if (foldersImg) foldersImg.src = selected === 'folders' ? '메모장 아이콘/Folders(on).png' : '메모장 아이콘/Folders(off).png';
+    
+    if (trashImg) {
+      if (selected === 'trash') {
+        trashImg.classList.add('icon-blue');
+      } else {
+        trashImg.classList.remove('icon-blue');
+      }
+    }
+
+    updateEditorReadOnlyState();
+  }
+
+  if (allNotesBtn) {
+    allNotesBtn.addEventListener('click', () => {
+      currentCategory = 'all';
+      updateMenuIcons('all');
+      if (searchInput) searchInput.value = '';
+      deselectNote();
+      deselectFolder();
+      filterNotes('');
+    });
+  }
+
+  if (quickNotesBtn) {
+    quickNotesBtn.addEventListener('click', () => {
+      currentCategory = 'quick';
+      updateMenuIcons('quick');
+      if (searchInput) searchInput.value = '';
+      deselectNote();
+      deselectFolder();
+      filterNotes('');
+    });
+  }
+
+  if (foldersBtn) {
+    foldersBtn.addEventListener('click', () => {
+      currentCategory = 'folders';
+      updateMenuIcons('folders');
+      if (searchInput) searchInput.value = '';
+      deselectNote();
+      deselectFolder();
+      filterNotes('');
+    });
+  }
+
+  /* Trash 버튼 클릭 이벤트 (휴지통 이동) */
+  if (trashBtn) {
+    trashBtn.addEventListener('click', () => {
+      if (activeNote && currentCategory !== 'trash') {
+        activeNote.dataset.category = 'trash';
+        deselectNote();
+        updateFolderCounts();
+        filterNotes(searchInput ? searchInput.value : '');
+      } 
+      else if (activeFolder && currentCategory === 'folders') {
+        const folderWrapper = activeFolder.closest('.folder-wrapper');
+        if (folderWrapper) {
+          folderWrapper.dataset.folderTrash = 'true';
+
+          const childNotes = folderWrapper.querySelectorAll('.frame_20');
+          childNotes.forEach(card => {
+            card.dataset.category = 'trash';
+          });
+
+          deselectFolder();
+          updateFolderCounts();
+          filterNotes(searchInput ? searchInput.value : '');
+        }
+      } 
+      else {
+        currentCategory = 'trash';
+        updateMenuIcons('trash');
+        if (searchInput) searchInput.value = '';
+        deselectNote();
+        deselectFolder();
+        filterNotes('');
+      }
+    });
+  }
+
+  /* 선택 항목 복원 (메모 및 폴더 대응) */
+  if (restoreNoteBtn) {
+    restoreNoteBtn.addEventListener('click', () => {
+      // 1. 메모가 선택되어 있을 때 복원
+      if (activeNote && activeNote.dataset.category === 'trash') {
+        activeNote.dataset.category = 'all';
+
+        const folderWrapper = activeNote.closest('.folder-wrapper');
+        if (folderWrapper && folderWrapper.dataset.folderTrash === 'true') {
+          delete folderWrapper.dataset.folderTrash;
+        }
+
+        deselectNote();
+        updateFolderCounts();
+        filterNotes(searchInput ? searchInput.value : '');
+      }
+      // 2. 폴더가 선택되어 있을 때 복원
+      else if (activeFolder) {
+        const folderWrapper = activeFolder.closest('.folder-wrapper');
+        if (folderWrapper && folderWrapper.dataset.folderTrash === 'true') {
+          delete folderWrapper.dataset.folderTrash;
+
+          const childNotes = folderWrapper.querySelectorAll('.frame_20');
+          childNotes.forEach(card => {
+            card.dataset.category = 'all';
+          });
+
+          deselectFolder();
+          updateFolderCounts();
+          filterNotes(searchInput ? searchInput.value : '');
+        }
+      }
+    });
+  }
+
+  /* 휴지통 비우기 (영구 삭제) */
+  if (emptyTrashBtn) {
+    emptyTrashBtn.addEventListener('click', () => {
+      const trashNotes = noteList.querySelectorAll('.frame_20[data-category="trash"]');
+      const trashFolders = noteList.querySelectorAll('.folder-wrapper[data-folder-trash="true"]');
+
+      if (trashNotes.length === 0 && trashFolders.length === 0) {
+        alert('휴지통이 비어있습니다.');
+        return;
+      }
+
+      if (confirm('휴지통에 있는 모든 항목을 영구 삭제하시겠습니까? 복원할 수 없습니다.')) {
+        trashNotes.forEach(card => card.remove());
+        trashFolders.forEach(folder => folder.remove());
+        deselectNote();
+        deselectFolder();
+        updateFolderCounts();
+        filterNotes(searchInput ? searchInput.value : '');
+      }
+    });
+  }
+
+  if (searchInput) {
+    searchInput.addEventListener('input', (e) => filterNotes(e.target.value));
+  }
+
+  if (newNoteBtn) {
+    newNoteBtn.addEventListener('click', () => createNewNote());
+  }
+
+  if (newFolderBtn) {
+    newFolderBtn.addEventListener('click', () => createFolder());
+  }
+
+  // 초기 상태 설정
+  deselectNote();
+  deselectFolder();
+  filterNotes('');
+
+  setInterval(refreshAllNoteTimes, 10000);
+</script>
+</body>
+</html>

@@ -1,0 +1,501 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #131525;
+  color: #ffffff;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  height: 100vh;
+}
+
+/* 요소 숨김 처리용 클래스 */
+.hidden {
+  display: none !important;
+}
+
+/* 메인 3단 컨테이너 */
+.frame_0 {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* 1단: 네비게이션 좌측 바 */
+.frame_1 {
+  width: 220px;
+  background-color: #171929;
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  border-right: 1px solid #23273a;
+}
+
+/* 2단: 메모 목록 영역 */
+.frame_16 {
+  width: 280px;
+  background-color: #1c1f33;
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  border-right: 1px solid #23273a;
+  max-width: 320px;
+  box-sizing: border-box;
+}
+
+/* 3단: 메모 상세 및 에디터 영역 */
+.frame_21 {
+  flex: 1;
+  background-color: #131525;
+  padding: 32px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* 빈 상태 및 폴더 선택 시 내용 숨김 */
+#editorArea.empty-state * {
+  display: none !important;
+}
+
+/* 내부 정렬 설정 */
+.frame_2, .frame_7, .frame_19, .frame_22, .frame_23 {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.frame_3, .frame_5, .frame_8, .frame_10, .frame_12, .frame_14, .frame_17 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.frame_23 {
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #23273a;
+}
+
+/* 이미지 및 아이콘 크기 고정 */
+img {
+  width: 12px;
+  height: 12px;
+  object-fit: contain;
+}
+
+.frame_6_l {
+  width: 100%;
+  height: 65px;
+  object-fit: contain;
+}
+
+.frame_7 {
+  gap: 20px;
+}
+
+.frame_8, .frame_10, .frame_12, .frame_14 {
+  padding: 8px 0;
+}
+
+.frame_20 {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.frame_22 {
+  gap: 12px;
+}
+
+.text_10 {
+  font-size: 24px;
+  font-weight: bold;
+  line-height: 1.4;
+}
+
+.text_11 {
+  color: #8a8d9b;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.frame_32 {
+  margin-top: 16px;
+  line-height: 1.8;
+}
+
+img.frame_4_l {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+
+img.frame_9_l {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+}
+
+/* 검색바 영역 */
+.frame_17 {
+  display: flex;
+  align-items: center;
+  background-color: #222638;
+  border-radius: 8px;
+  padding: 10px 14px;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.frame_18_l {
+  width: 16px;
+  height: 16px;
+  opacity: 0.5;
+  filter: invert(1);
+}
+
+.text_6 {
+  color: #7b8192;
+  font-size: 14px;
+}
+
+/* 노트 리스트 영역 */
+.frame_19 {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+.text_7 {
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.text_8_l {
+  color: #6c7385;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+/* 폴더 내부의 메모 카드 스타일 */
+.folder-children .frame_20 {
+  padding-top: 4px;
+  padding-bottom: 8px;
+  gap: 2px;
+}
+
+.folder-children .frame_20 .text_7 {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.folder-children .frame_20 .card-content {
+  display: none !important;
+}
+
+.folder-children .frame_20 .card-time {
+  font-size: 11px;
+  color: #6c7385;
+}
+
+.frame_32 textarea.text_15 {
+  width: 100%;
+  height: 100%;
+  min-height: 400px;
+  background: transparent;
+  border: none;
+  outline: none;
+  resize: none;
+  color: #ffffff;
+  font-size: 15px;
+  font-family: inherit;
+  line-height: 1.6;
+}
+
+.frame_32 textarea.text_15::placeholder {
+  color: #6c7385;
+}
+
+.frame_22 input.text_10 {
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #ffffff;
+  font-size: 24px;
+  font-weight: bold;
+  font-family: inherit;
+  padding: 0;
+  margin-bottom: 8px;
+}
+
+.frame_22 input.text_10::placeholder {
+  color: #6c7385;
+  font-weight: normal;
+}
+
+span.tool {
+  color: #6B7280;
+}
+
+div.frame_24 {
+  font-weight: 500;
+}
+
+.frame_20 .text_7 {
+  display: block;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-all;
+}
+
+.frame_19::-webkit-scrollbar {
+  width: 6px;
+}
+
+.frame_19::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.frame_19::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.frame_17 input.text_6 {
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #ffffff;
+  font-size: 14px;
+  font-family: inherit;
+}
+
+.frame_17 input.text_6::placeholder {
+  color: #7b8192;
+}
+
+.menu-btn {
+  background: none !important;
+  border: none !important;
+  padding: 8px 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+  outline: none;
+  box-shadow: none !important;
+}
+
+.menu-btn img {
+  width: 20px;
+  height: 20px;
+}
+
+.menu-btn span {
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.folder-wrapper {
+  margin-bottom: 4px;
+}
+
+.folder-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-radius: 6px;
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 14px;
+  user-select: none;
+  background: transparent;
+  transition: background-color 0.2s ease;
+}
+
+.folder-item:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+/* ★ 폴더가 선택되었을 때: 반투명한 흰색 네모 스타일 적용 ★ */
+.folder-item.selected {
+  background-color: rgba(255, 255, 255, 0.18) !important;
+  border-radius: 6px;
+}
+
+.frame_20.selected {
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.frame_20:hover {
+  background-color: transparent !important;
+}
+
+.folder-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.arrow-icon {
+  font-size: 10px;
+  width: 12px;
+  display: inline-block;
+  text-align: center;
+  cursor: pointer;
+}
+
+.folder-icon {
+  font-size: 16px;
+}
+
+/* 폴더 제목 스타일 및 편집 상태 */
+.folder-title {
+  font-weight: 600;
+  color: #ffffff;
+  outline: none;
+  padding: 2px 4px;
+  border-radius: 4px;
+  cursor: text;
+}
+
+.folder-title[contenteditable="true"]:focus {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.folder-count-badge {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  border-radius: 12px;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.folder-children {
+  margin-left: 18px;
+  display: block;
+}
+
+.folder-children.collapsed {
+  display: none;
+}
+
+.folder-header-title {
+  color: #8a8d9b;
+  font-size: 12px;
+  margin-bottom: 8px;
+  padding-left: 4px;
+  font-weight: 600;
+}
+
+.trash-action-area {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 10px;
+}
+
+.trash-btn-action {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.trash-btn-action:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.btn-empty-trash {
+  background: rgba(255, 77, 77, 0.2);
+  border-color: rgba(255, 77, 77, 0.4);
+  color: #ff6b6b;
+}
+
+.btn-empty-trash:hover {
+  background: rgba(255, 77, 77, 0.4);
+}
+
+.icon-blue {
+  filter: invert(38%) sepia(98%) saturate(1812%) hue-rotate(200deg) brightness(101%) contrast(101%);
+}
+
+.action-btn-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 16px;
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+.primary-blue-btn {
+  width: 100%;
+  background-color: #3b82f6;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background-color 0.2s;
+  box-sizing: border-box;
+}
+
+.primary-blue-btn:hover {
+  background-color: #2563eb;
+}
+#inputContent {
+  width: 100%;
+  min-height: 300px;
+  outline: none;
+  color: #ffffff;
+  font-size: 15px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+/* placeholder 효과 */
+#inputContent:empty:before {
+  content: attr(placeholder);
+  color: #6c727f;
+  cursor: text;
+}
