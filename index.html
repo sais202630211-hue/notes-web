@@ -35,17 +35,17 @@
         </button>
 
         <button type="button" class='menu-btn' id="quickNotesBtn">
-          <img src='/Quick Notes(off).png' id="quickNotesImg" />
+          <img src='notesIcon/Quick Notes(off).png' id="quickNotesImg" />
           <span>Quick Notes</span>
         </button>
 
         <button type="button" class='menu-btn' id="foldersBtn">
-          <img src='/Folders(off).png' id="foldersImg" />
+          <img src='notesIcon/Folders(off).png' id="foldersImg" />
           <span>Folders</span>
         </button>
 
         <button type="button" class='menu-btn' id="trashBtn">
-          <img src='/trash.png' id="trashImg" />
+          <img src='notesIcon/trash.png' id="trashImg" />
           <span>Trash</span>
         </button>
       </div>
@@ -980,7 +980,7 @@
   function updateMenuIcons(selected) {
     allNotesImg.src =
       selected === 'all'
-        ? '/All Notes(on).png'
+        ? 'notesIcon/All Notes(on).png'
         : 'notesIcon/All Notes(off).png';
 
     quickNotesImg.src =
